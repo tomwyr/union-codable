@@ -13,19 +13,23 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(url: "https://github.com/apple/swift-syntax.git", from: "509.0.0")
+        .package(url: "https://github.com/apple/swift-syntax.git", from: "601.0.0")
     ],
     targets: [
         .macro(
-            name: "UnionCodable",
+            name: "UnionCodableMacros",
             dependencies: [
                 .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
                 .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
-            ]
+            ],
+        ),
+        .target(
+            name: "UnionCodable",
+            dependencies: ["UnionCodableMacros"],
         ),
         .testTarget(
             name: "UnionCodableTests",
-            dependencies: ["UnionCodable"],
+            dependencies: ["UnionCodableMacros"],
         ),
     ]
 )
