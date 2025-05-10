@@ -1,7 +1,23 @@
+import MacroTesting
 import Testing
 
-@testable import UnionCodable
+@testable import UnionCodableMacros
 
-@Test func example() async throws {
-    // Write your test here and use APIs like `#expect(...)` to check expected conditions.
+@Suite(.macros([UnionCodableMacro.self]))
+struct UnionCodableTest {
+    @Test func casesWithNoParams() async throws {
+        assertMacro {
+            """
+            enum Direction {
+                case up, down, left, right 
+            }
+            """
+        } expansion: {
+            """
+            enum Direction {
+                case up, down, left, right 
+            }
+            """
+        }
+    }
 }
