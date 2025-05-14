@@ -22,7 +22,9 @@ public struct UnionCodableMacro: MemberMacro {
     let cases = try extractEnumCases(enumDecl)
 
     return [
-      expandCodingKeys(name, cases)
+      expandCodingKeys(name, cases),
+      expandEncoding(name, cases),
+      expandDecoding(name, cases),
     ]
   }
 
@@ -46,17 +48,55 @@ public struct UnionCodableMacro: MemberMacro {
   }
 
   private static func expandCodingKeys(_ name: String, _ cases: [EnumCase]) -> DeclSyntax {
-    let keyCases = cases.mapLines {
-      "case \($0.name)"
-    }
-
     return """
       extension \(raw: name) {
         fileprivate enum CodingKeys: String, CodingKey {
-          \(raw: keyCases.padded(4))
+          case type
         }
       }
       """
+  }
+
+  private static func expandEncoding(_ name: String, _ cases: [EnumCase]) -> DeclSyntax {
+    """
+    extension \(raw: name): Encodable {
+      func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+
+        switch self {
+          \(raw: cases.mapLines { """
+          case .\($0.name):
+            try container.encode("\($0.name)", forKey: .type)
+          """
+          }.padded(6))
+        }
+      }
+    }
+    """
+  }
+
+  private static func expandDecoding(_ name: String, _ cases: [EnumCase]) -> DeclSyntax {
+    """
+    extension \(raw: name): Decodable {
+      func init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let type = try container.decode(String.self, forKey: .type)
+
+        switch (type) {
+          \(raw: cases.mapLines { """
+          case "\($0.name)":
+            self = .\($0.name)
+          """
+          }.padded(6))
+          default:
+            throw DecodingError.dataCorruptedError(
+              forKey: .type, in: container, 
+              debugDescription: "Unknown union type: \\(type)"
+            )
+        }
+      }
+    }
+    """
   }
 }
 
