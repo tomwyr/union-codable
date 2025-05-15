@@ -9,7 +9,7 @@ let package = Package(
     products: [
         .library(
             name: "UnionCodable",
-            targets: ["UnionCodable"],
+            targets: ["UnionCodableMacros"]
         )
     ],
     dependencies: [
