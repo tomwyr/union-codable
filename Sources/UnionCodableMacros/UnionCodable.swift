@@ -64,11 +64,11 @@ public struct UnionCodableMacro: MemberMacro {
         var container = encoder.container(keyedBy: CodingKeys.self)
 
         switch self {
-          \(raw: cases.mapLines { """
-          case .\($0.name):
-            try container.encode("\($0.name)", forKey: .type)
-          """
-          }.padded(6))
+        \(raw: cases.mapLines { """
+        case .\($0.name):
+          try container.encode("\($0.name)", forKey: .type)
+        """
+        }.padded(4))
         }
       }
     }
@@ -78,21 +78,21 @@ public struct UnionCodableMacro: MemberMacro {
   private static func expandDecoding(_ name: String, _ cases: [EnumCase]) -> DeclSyntax {
     """
     extension \(raw: name): Decodable {
-      func init(from decoder: any Decoder) throws {
+      init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let type = try container.decode(String.self, forKey: .type)
 
-        switch (type) {
-          \(raw: cases.mapLines { """
-          case "\($0.name)":
-            self = .\($0.name)
-          """
-          }.padded(6))
-          default:
-            throw DecodingError.dataCorruptedError(
-              forKey: .type, in: container, 
-              debugDescription: "Unknown union type: \\(type)"
-            )
+        switch type {
+        \(raw: cases.mapLines { """
+        case "\($0.name)":
+          self = .\($0.name)
+        """
+        }.padded(4))
+        default:
+          throw DecodingError.dataCorruptedError(
+            forKey: .type, in: container, 
+            debugDescription: "Unknown union type: \\(type)"
+          )
         }
       }
     }
