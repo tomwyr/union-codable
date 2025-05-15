@@ -31,19 +31,18 @@ public struct UnionCodableMacro: MemberMacro {
   private static func extractEnumCases(
     _ enumDecl: EnumDeclSyntax,
   ) throws(UnionCodableError) -> [EnumCase] {
-    enumDecl.memberBlock.members.compactMap { member in
-      guard let caseDecl = member.decl.as(EnumCaseDeclSyntax.self),
-        caseDecl.elements.count == 1,
-        let element = caseDecl.elements.first
-      else {
-        return nil
+    enumDecl.memberBlock.members.flatMap { member -> [EnumCase] in
+      guard let caseDecl = member.decl.as(EnumCaseDeclSyntax.self) else {
+        return []
       }
 
-      let name = element.name.text
-      let params = element.parameterClause?.parameters.map { param in
-        (name: param.firstName?.text, type: param.type.description)
+      return caseDecl.elements.map { element in
+        let name = element.name.text
+        let params = element.parameterClause?.parameters.map { param in
+          (name: param.firstName?.text, type: param.type.description)
+        }
+        return (name: name, params: params)
       }
-      return (name: name, params: params)
     }
   }
 
