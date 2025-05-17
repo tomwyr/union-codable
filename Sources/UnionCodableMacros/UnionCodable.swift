@@ -1,10 +1,11 @@
 import SwiftSyntax
 import SwiftSyntaxMacros
 
-public struct UnionCodableMacro: MemberMacro {
+public struct UnionCodableMacro: PeerMacro {
   public static func expansion(
-    of node: AttributeSyntax, providingMembersOf declaration: some DeclGroupSyntax,
-    conformingTo protocols: [TypeSyntax], in context: some MacroExpansionContext
+    of node: SwiftSyntax.AttributeSyntax,
+    providingPeersOf declaration: some SwiftSyntax.DeclSyntaxProtocol,
+    in context: some SwiftSyntaxMacros.MacroExpansionContext
   ) throws(UnionCodableError) -> [DeclSyntax] {
     guard let config = extractMacroConfig(node) else {
       throw .invalidDeclaration

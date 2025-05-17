@@ -25,50 +25,50 @@ extension UnionCodableTest {
         case down
         case left
         case right
+      }
 
-        extension Direction {
-          fileprivate enum CodingKeys: String, CodingKey {
-            case type
+      extension Direction {
+        fileprivate enum CodingKeys: String, CodingKey {
+          case type
+        }
+      }
+
+      extension Direction: Encodable {
+        func encode(to encoder: any Encoder) throws {
+          var container = encoder.container(keyedBy: CodingKeys.self)
+
+          switch self {
+          case .up:
+            try container.encode("up", forKey: .type)
+          case .down:
+            try container.encode("down", forKey: .type)
+          case .left:
+            try container.encode("left", forKey: .type)
+          case .right:
+            try container.encode("right", forKey: .type)
           }
         }
+      }
 
-        extension Direction: Encodable {
-          func encode(to encoder: any Encoder) throws {
-            var container = encoder.container(keyedBy: CodingKeys.self)
+      extension Direction: Decodable {
+        init(from decoder: any Decoder) throws {
+          let container = try decoder.container(keyedBy: CodingKeys.self)
+          let type = try container.decode(String.self, forKey: .type)
 
-            switch self {
-            case .up:
-              try container.encode("up", forKey: .type)
-            case .down:
-              try container.encode("down", forKey: .type)
-            case .left:
-              try container.encode("left", forKey: .type)
-            case .right:
-              try container.encode("right", forKey: .type)
-            }
-          }
-        }
-
-        extension Direction: Decodable {
-          init(from decoder: any Decoder) throws {
-            let container = try decoder.container(keyedBy: CodingKeys.self)
-            let type = try container.decode(String.self, forKey: .type)
-
-            switch type {
-            case "up":
-              self = .up
-            case "down":
-              self = .down
-            case "left":
-              self = .left
-            case "right":
-              self = .right
-            default:
-              throw DecodingError.dataCorruptedError(
-                forKey: .type, in: container,
-                debugDescription: "Unknown union type: \\(type)"
-              )
-            }
+          switch type {
+          case "up":
+            self = .up
+          case "down":
+            self = .down
+          case "left":
+            self = .left
+          case "right":
+            self = .right
+          default:
+            throw DecodingError.dataCorruptedError(
+              forKey: .type, in: container,
+              debugDescription: "Unknown union type: \\(type)"
+            )
           }
         }
       }
@@ -88,50 +88,50 @@ extension UnionCodableTest {
       """
       enum Direction {
         case up, down, left, right
+      }
 
-        extension Direction {
-          fileprivate enum CodingKeys: String, CodingKey {
-            case type
+      extension Direction {
+        fileprivate enum CodingKeys: String, CodingKey {
+          case type
+        }
+      }
+
+      extension Direction: Encodable {
+        func encode(to encoder: any Encoder) throws {
+          var container = encoder.container(keyedBy: CodingKeys.self)
+
+          switch self {
+          case .up:
+            try container.encode("up", forKey: .type)
+          case .down:
+            try container.encode("down", forKey: .type)
+          case .left:
+            try container.encode("left", forKey: .type)
+          case .right:
+            try container.encode("right", forKey: .type)
           }
         }
+      }
 
-        extension Direction: Encodable {
-          func encode(to encoder: any Encoder) throws {
-            var container = encoder.container(keyedBy: CodingKeys.self)
+      extension Direction: Decodable {
+        init(from decoder: any Decoder) throws {
+          let container = try decoder.container(keyedBy: CodingKeys.self)
+          let type = try container.decode(String.self, forKey: .type)
 
-            switch self {
-            case .up:
-              try container.encode("up", forKey: .type)
-            case .down:
-              try container.encode("down", forKey: .type)
-            case .left:
-              try container.encode("left", forKey: .type)
-            case .right:
-              try container.encode("right", forKey: .type)
-            }
-          }
-        }
-
-        extension Direction: Decodable {
-          init(from decoder: any Decoder) throws {
-            let container = try decoder.container(keyedBy: CodingKeys.self)
-            let type = try container.decode(String.self, forKey: .type)
-
-            switch type {
-            case "up":
-              self = .up
-            case "down":
-              self = .down
-            case "left":
-              self = .left
-            case "right":
-              self = .right
-            default:
-              throw DecodingError.dataCorruptedError(
-                forKey: .type, in: container,
-                debugDescription: "Unknown union type: \\(type)"
-              )
-            }
+          switch type {
+          case "up":
+            self = .up
+          case "down":
+            self = .down
+          case "left":
+            self = .left
+          case "right":
+            self = .right
+          default:
+            throw DecodingError.dataCorruptedError(
+              forKey: .type, in: container,
+              debugDescription: "Unknown union type: \\(type)"
+            )
           }
         }
       }
@@ -151,50 +151,50 @@ extension UnionCodableTest {
       """
       enum Direction {
         case up, down, left, right
+      }
 
-        extension Direction {
-          fileprivate enum CodingKeys: String, CodingKey {
-            case type
+      extension Direction {
+        fileprivate enum CodingKeys: String, CodingKey {
+          case type
+        }
+      }
+
+      extension Direction: Encodable {
+        func encode(to encoder: any Encoder) throws {
+          var container = encoder.container(keyedBy: CodingKeys.self)
+
+          switch self {
+          case .up:
+            try container.encode("up", forKey: .type)
+          case .down:
+            try container.encode("down", forKey: .type)
+          case .left:
+            try container.encode("left", forKey: .type)
+          case .right:
+            try container.encode("right", forKey: .type)
           }
         }
+      }
 
-        extension Direction: Encodable {
-          func encode(to encoder: any Encoder) throws {
-            var container = encoder.container(keyedBy: CodingKeys.self)
+      extension Direction: Decodable {
+        init(from decoder: any Decoder) throws {
+          let container = try decoder.container(keyedBy: CodingKeys.self)
+          let type = try container.decode(String.self, forKey: .type)
 
-            switch self {
-            case .up:
-              try container.encode("up", forKey: .type)
-            case .down:
-              try container.encode("down", forKey: .type)
-            case .left:
-              try container.encode("left", forKey: .type)
-            case .right:
-              try container.encode("right", forKey: .type)
-            }
-          }
-        }
-
-        extension Direction: Decodable {
-          init(from decoder: any Decoder) throws {
-            let container = try decoder.container(keyedBy: CodingKeys.self)
-            let type = try container.decode(String.self, forKey: .type)
-
-            switch type {
-            case "up":
-              self = .up
-            case "down":
-              self = .down
-            case "left":
-              self = .left
-            case "right":
-              self = .right
-            default:
-              throw DecodingError.dataCorruptedError(
-                forKey: .type, in: container,
-                debugDescription: "Unknown union type: \\(type)"
-              )
-            }
+          switch type {
+          case "up":
+            self = .up
+          case "down":
+            self = .down
+          case "left":
+            self = .left
+          case "right":
+            self = .right
+          default:
+            throw DecodingError.dataCorruptedError(
+              forKey: .type, in: container,
+              debugDescription: "Unknown union type: \\(type)"
+            )
           }
         }
       }
@@ -214,50 +214,50 @@ extension UnionCodableTest {
       """
       enum Direction {
         case up, down, left, right
+      }
 
-        extension Direction {
-          fileprivate enum CodingKeys: String, CodingKey {
-            case kind
+      extension Direction {
+        fileprivate enum CodingKeys: String, CodingKey {
+          case kind
+        }
+      }
+
+      extension Direction: Encodable {
+        func encode(to encoder: any Encoder) throws {
+          var container = encoder.container(keyedBy: CodingKeys.self)
+
+          switch self {
+          case .up:
+            try container.encode("up", forKey: .kind)
+          case .down:
+            try container.encode("down", forKey: .kind)
+          case .left:
+            try container.encode("left", forKey: .kind)
+          case .right:
+            try container.encode("right", forKey: .kind)
           }
         }
+      }
 
-        extension Direction: Encodable {
-          func encode(to encoder: any Encoder) throws {
-            var container = encoder.container(keyedBy: CodingKeys.self)
+      extension Direction: Decodable {
+        init(from decoder: any Decoder) throws {
+          let container = try decoder.container(keyedBy: CodingKeys.self)
+          let kind = try container.decode(String.self, forKey: .kind)
 
-            switch self {
-            case .up:
-              try container.encode("up", forKey: .kind)
-            case .down:
-              try container.encode("down", forKey: .kind)
-            case .left:
-              try container.encode("left", forKey: .kind)
-            case .right:
-              try container.encode("right", forKey: .kind)
-            }
-          }
-        }
-
-        extension Direction: Decodable {
-          init(from decoder: any Decoder) throws {
-            let container = try decoder.container(keyedBy: CodingKeys.self)
-            let kind = try container.decode(String.self, forKey: .kind)
-
-            switch kind {
-            case "up":
-              self = .up
-            case "down":
-              self = .down
-            case "left":
-              self = .left
-            case "right":
-              self = .right
-            default:
-              throw DecodingError.dataCorruptedError(
-                forKey: .kind, in: container,
-                debugDescription: "Unknown union kind: \\(kind)"
-              )
-            }
+          switch kind {
+          case "up":
+            self = .up
+          case "down":
+            self = .down
+          case "left":
+            self = .left
+          case "right":
+            self = .right
+          default:
+            throw DecodingError.dataCorruptedError(
+              forKey: .kind, in: container,
+              debugDescription: "Unknown union kind: \\(kind)"
+            )
           }
         }
       }
@@ -283,49 +283,49 @@ extension UnionCodableTest {
         case loading(progress: Double)
         case data(length: Int, payload: String)
         case error
+      }
 
-        extension Resource {
-          fileprivate enum CodingKeys: String, CodingKey {
-            case type, progress, length, payload
+      extension Resource {
+        fileprivate enum CodingKeys: String, CodingKey {
+          case type, progress, length, payload
+        }
+      }
+
+      extension Resource: Encodable {
+        func encode(to encoder: any Encoder) throws {
+          var container = encoder.container(keyedBy: CodingKeys.self)
+
+          switch self {
+          case .loading:
+            try container.encode("loading", forKey: .type)
+            try container.encode(progress, forKey: .progress)
+          case .data:
+            try container.encode("data", forKey: .type)
+            try container.encode(length, forKey: .length)
+            try container.encode(payload, forKey: .payload)
+          case .error:
+            try container.encode("error", forKey: .type)
           }
         }
+      }
 
-        extension Resource: Encodable {
-          func encode(to encoder: any Encoder) throws {
-            var container = encoder.container(keyedBy: CodingKeys.self)
+      extension Resource: Decodable {
+        init(from decoder: any Decoder) throws {
+          let container = try decoder.container(keyedBy: CodingKeys.self)
+          let type = try container.decode(String.self, forKey: .type)
 
-            switch self {
-            case .loading:
-              try container.encode("loading", forKey: .type)
-              try container.encode(progress, forKey: .progress)
-            case .data:
-              try container.encode("data", forKey: .type)
-              try container.encode(length, forKey: .length)
-              try container.encode(payload, forKey: .payload)
-            case .error:
-              try container.encode("error", forKey: .type)
-            }
-          }
-        }
-
-        extension Resource: Decodable {
-          init(from decoder: any Decoder) throws {
-            let container = try decoder.container(keyedBy: CodingKeys.self)
-            let type = try container.decode(String.self, forKey: .type)
-
-            switch type {
-            case "loading":
-              self = .loading
-            case "data":
-              self = .data
-            case "error":
-              self = .error
-            default:
-              throw DecodingError.dataCorruptedError(
-                forKey: .type, in: container,
-                debugDescription: "Unknown union type: \\(type)"
-              )
-            }
+          switch type {
+          case "loading":
+            self = .loading
+          case "data":
+            self = .data
+          case "error":
+            self = .error
+          default:
+            throw DecodingError.dataCorruptedError(
+              forKey: .type, in: container,
+              debugDescription: "Unknown union type: \\(type)"
+            )
           }
         }
       }
