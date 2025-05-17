@@ -267,12 +267,80 @@ extension UnionCodableTest {
 }
 
 extension UnionCodableTest {
+  @Test func casesWithNamedParams() async throws {
+    assertMacro {
+      """
+      @UnionCodable
+      enum Resource {
+        case loading(progress: Double)
+        case data(length: Int, payload: String)
+        case error
+      }
+      """
+    } expansion: {
+      """
+      enum Resource {
+        case loading(progress: Double)
+        case data(length: Int, payload: String)
+        case error
+
+        extension Resource {
+          fileprivate enum CodingKeys: String, CodingKey {
+            case type, progress, length, payload
+          }
+        }
+
+        extension Resource: Encodable {
+          func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: CodingKeys.self)
+
+            switch self {
+            case .loading:
+              try container.encode("loading", forKey: .type)
+              try container.encode(progress, forKey: .progress)
+            case .data:
+              try container.encode("data", forKey: .type)
+              try container.encode(length, forKey: .length)
+              try container.encode(payload, forKey: .payload)
+            case .error:
+              try container.encode("error", forKey: .type)
+            }
+          }
+        }
+
+        extension Resource: Decodable {
+          init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            let type = try container.decode(String.self, forKey: .type)
+
+            switch type {
+            case "loading":
+              self = .loading
+            case "data":
+              self = .data
+            case "error":
+              self = .error
+            default:
+              throw DecodingError.dataCorruptedError(
+                forKey: .type, in: container,
+                debugDescription: "Unknown union type: \\(type)"
+              )
+            }
+          }
+        }
+      }
+      """
+    }
+  }
+}
+
+extension UnionCodableTest {
   @Test func casesWithDiscriminatorConflict() async throws {
     assertMacro {
       """
       @UnionCodable
       enum Resource {
-        case loading(timeout: Duration)
+        case loading(progress: Double)
         case data(length: Int, type: String)
         case error
       }
@@ -283,7 +351,7 @@ extension UnionCodableTest {
       ┬────────────
       ╰─ 🛑 discriminatorConflict(caseName: "data")
       enum Resource {
-        case loading(timeout: Duration)
+        case loading(progress: Double)
         case data(length: Int, type: String)
         case error
       }
@@ -296,7 +364,7 @@ extension UnionCodableTest {
       """
       @UnionCodable(discriminator: "resource")
       enum Resource {
-        case loading(timeout: Duration)
+        case loading(progress: Double)
         case data(length: Int, resource: String)
         case error
       }
@@ -307,7 +375,7 @@ extension UnionCodableTest {
       ┬───────────────────────────────────────
       ╰─ 🛑 discriminatorConflict(caseName: "data")
       enum Resource {
-        case loading(timeout: Duration)
+        case loading(progress: Double)
         case data(length: Int, resource: String)
         case error
       }
