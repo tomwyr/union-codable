@@ -14,18 +14,50 @@ public struct UnionCodableMacro: MemberMacro {
     of node: AttributeSyntax, providingMembersOf declaration: some DeclGroupSyntax,
     conformingTo protocols: [TypeSyntax], in context: some MacroExpansionContext
   ) throws(UnionCodableError) -> [DeclSyntax] {
+    guard let macroConfig = extractMacroConfig(node) else {
+      throw .invalidDeclaration
+    }
     guard let enumDecl = declaration.as(EnumDeclSyntax.self) else {
       throw .invalidTarget
     }
 
-    let name = enumDecl.name.text
+    let target = enumDecl.name.text
+    let discriminator = macroConfig.discriminator
     let cases = try extractEnumCases(enumDecl)
 
     return [
-      expandCodingKeys(name, cases),
-      expandEncoding(name, cases),
-      expandDecoding(name, cases),
+      expandCodingKeys(target: target, discriminator: discriminator, cases: cases),
+      expandEncoding(target: target, cases: cases),
+      expandDecoding(target: target, cases: cases),
     ]
+  }
+}
+
+extension UnionCodableMacro {
+  private static func extractMacroConfig(_ node: AttributeSyntax) -> UnionCodableConfig? {
+    var config = UnionCodableConfig()
+
+    guard case let .argumentList(argsList) = node.arguments else {
+      return config
+    }
+
+    if let discriminator = extractStringArg(name: "discriminator", from: argsList) {
+      config.discriminator = discriminator
+    }
+
+    return config
+  }
+
+  private static func extractStringArg(name: String, from argsList: LabeledExprListSyntax)
+    -> String?
+  {
+    let matchedArgs = argsList.filter { arg in arg.label?.identifier?.name == name }
+    guard matchedArgs.count == 1, let matchedArg = matchedArgs.first,
+      let argExpr = matchedArg.expression.as(StringLiteralExprSyntax.self)
+    else {
+      return nil
+    }
+    return argExpr.segments.joined()
   }
 
   private static func extractEnumCases(
@@ -45,20 +77,26 @@ public struct UnionCodableMacro: MemberMacro {
       }
     }
   }
+}
 
-  private static func expandCodingKeys(_ name: String, _ cases: [EnumCase]) -> DeclSyntax {
+extension UnionCodableMacro {
+  private static func expandCodingKeys(target: String, discriminator: String, cases: [EnumCase])
+    -> DeclSyntax
+  {
     return """
-      extension \(raw: name) {
+      extension \(raw: target) {
         fileprivate enum CodingKeys: String, CodingKey {
-          case type
+          case type = "\(raw: discriminator)"
         }
       }
       """
   }
 
-  private static func expandEncoding(_ name: String, _ cases: [EnumCase]) -> DeclSyntax {
+  private static func expandEncoding(target: String, cases: [EnumCase])
+    -> DeclSyntax
+  {
     """
-    extension \(raw: name): Encodable {
+    extension \(raw: target): Encodable {
       func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
 
@@ -74,9 +112,11 @@ public struct UnionCodableMacro: MemberMacro {
     """
   }
 
-  private static func expandDecoding(_ name: String, _ cases: [EnumCase]) -> DeclSyntax {
+  private static func expandDecoding(target: String, cases: [EnumCase])
+    -> DeclSyntax
+  {
     """
-    extension \(raw: name): Decodable {
+    extension \(raw: target): Decodable {
       init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let type = try container.decode(String.self, forKey: .type)
@@ -99,6 +139,10 @@ public struct UnionCodableMacro: MemberMacro {
   }
 }
 
+struct UnionCodableConfig {
+  var discriminator: String = "type"
+}
+
 typealias EnumCase = (name: String, params: [(name: String?, type: String)]?)
 
 extension Array {
@@ -111,5 +155,13 @@ extension String {
   func padded(_ count: Int) -> String {
     let padding = String(repeating: " ", count: count)
     return split(separator: "\n").joined(separator: "\n" + padding)
+  }
+}
+
+extension StringLiteralSegmentListSyntax {
+  func joined() -> String {
+    compactMap { segment in
+      segment.as(StringSegmentSyntax.self)?.content.text
+    }.joined()
   }
 }
