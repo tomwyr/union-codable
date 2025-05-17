@@ -113,10 +113,10 @@ extension UnionCodableMacro {
         var container = encoder.container(keyedBy: CodingKeys.self)
 
         switch self {
-        \(raw: cases.mapLines { """
+        \(raw: cases.lineJoined { """
         \(expandCaseClause($0))
-          \(expandCaseEncoding($0, config).padded(2))
-        """ }.padded(4))
+          \(expandCaseEncoding($0, config).linePadded(2))
+        """ }.linePadded(4))
         }
       }
     }
@@ -143,7 +143,7 @@ extension UnionCodableMacro {
     let encodeDiscriminator = """
       try container.encode("\(enumCase.name)", forKey: .\(config.discriminator))
       """
-    let encodeParams = enumCase.params.compactMap(\.name).mapLines {
+    let encodeParams = enumCase.params.compactMap(\.name).lineJoined {
       """
       try container.encode(\($0), forKey: .\($0))   
       """
@@ -174,10 +174,10 @@ extension UnionCodableMacro {
           let \(discriminator) = try container.decode(String.self, forKey: .\(discriminator))
 
           switch \(discriminator) {
-          \(raw: cases.mapLines { """
+          \(raw: cases.lineJoined { """
           case "\($0.name)":
-            \(expandCaseDecoding($0).padded(2))
-          """ }.padded(4))
+            \(expandCaseDecoding($0).linePadded(2))
+          """ }.linePadded(4))
           default:
             throw DecodingError.dataCorruptedError(
               forKey: .\(discriminator), in: container, 
@@ -201,7 +201,7 @@ extension UnionCodableMacro {
     } else {
       """
       self = .\(enumCase.name)(
-      \(namedParams.mapLines(separator: ",") { """
+      \(namedParams.lineJoined(suffix: ",") { """
         \($0.name): try container.decode(\($0.type).self, forKey: .\($0.name))
       """})
       )
@@ -217,8 +217,8 @@ struct UnionCodableConfig {
 typealias EnumCase = (name: String, params: [(name: String?, type: String)])
 
 extension Array {
-  func mapLines(separator: String = "", transform: (Element) -> String) -> String {
-    map(transform).joined(separator: separator + "\n")
+  func lineJoined(suffix: String = "", transform: (Element) -> String) -> String {
+    map(transform).joined(separator: suffix + "\n")
   }
 
   func split(by predicate: (Element) -> Bool) -> ([Element], [Element]) {
@@ -236,7 +236,7 @@ extension Array {
 }
 
 extension String {
-  func padded(_ count: Int) -> String {
+  func linePadded(_ count: Int) -> String {
     let padding = String(repeating: " ", count: count)
     return split(separator: "\n").joined(separator: "\n" + padding)
   }
