@@ -4,7 +4,9 @@ import Testing
 @testable import UnionCodableMacros
 
 @Suite(.macros([UnionCodableMacro.self]))
-struct UnionCodableTest {
+struct UnionCodableTest {}
+
+extension UnionCodableTest {
   @Test func casesWithNoParamsMultiLine() async throws {
     assertMacro {
       """
@@ -258,6 +260,56 @@ struct UnionCodableTest {
             }
           }
         }
+      }
+      """
+    }
+  }
+}
+
+extension UnionCodableTest {
+  @Test func casesWithDiscriminatorConflict() async throws {
+    assertMacro {
+      """
+      @UnionCodable
+      enum Resource {
+        case loading(timeout: Duration)
+        case data(length: Int, type: String)
+        case error
+      }
+      """
+    } diagnostics: {
+      """
+      @UnionCodable
+      ┬────────────
+      ╰─ 🛑 discriminatorConflict(caseName: "data")
+      enum Resource {
+        case loading(timeout: Duration)
+        case data(length: Int, type: String)
+        case error
+      }
+      """
+    }
+  }
+
+  @Test func casesWithCustomDiscriminatorConflict() async throws {
+    assertMacro {
+      """
+      @UnionCodable(discriminator: "resource")
+      enum Resource {
+        case loading(timeout: Duration)
+        case data(length: Int, resource: String)
+        case error
+      }
+      """
+    } diagnostics: {
+      """
+      @UnionCodable(discriminator: "resource")
+      ┬───────────────────────────────────────
+      ╰─ 🛑 discriminatorConflict(caseName: "data")
+      enum Resource {
+        case loading(timeout: Duration)
+        case data(length: Int, resource: String)
+        case error
       }
       """
     }

@@ -3,13 +3,19 @@ import Foundation
 public enum UnionCodableError: Error, LocalizedError {
   case invalidDeclaration
   case invalidTarget
+  case ambiguousPayload
+  case discriminatorConflict(caseName: String)
 
   public var errorDescription: String? {
     switch self {
     case .invalidDeclaration:
-      "Unexpected format of the UnionCodable macro"
+      "Unexpected format in UnionCodable macro"
     case .invalidTarget:
-      "The UnionCodable macro can only be applied to enums"
+      "UnionCodable macro can only be applied to enums"
+    case .ambiguousPayload:
+      "UnionCodable macro supports only a single positional param or named params"
+    case .discriminatorConflict(let caseName):
+      "Discriminator conflict detected for case '\(caseName)'"
     }
   }
 }

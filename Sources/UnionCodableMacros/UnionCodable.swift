@@ -22,7 +22,9 @@ public struct UnionCodableMacro: MemberMacro {
     }
 
     let target = enumDecl.name.text
-    let cases = try extractEnumCases(enumDecl)
+    let cases = extractEnumCases(enumDecl)
+
+    try validateEnumCases(cases: cases, config: config)
 
     return [
       expandCodingKeys(target: target, cases: cases, config: config),
@@ -59,9 +61,7 @@ extension UnionCodableMacro {
     return argExpr.segments.joined()
   }
 
-  private static func extractEnumCases(
-    _ enumDecl: EnumDeclSyntax,
-  ) throws(UnionCodableError) -> [EnumCase] {
+  private static func extractEnumCases(_ enumDecl: EnumDeclSyntax) -> [EnumCase] {
     enumDecl.memberBlock.members.flatMap { member -> [EnumCase] in
       guard let caseDecl = member.decl.as(EnumCaseDeclSyntax.self) else {
         return []
@@ -73,6 +73,23 @@ extension UnionCodableMacro {
           (name: param.firstName?.text, type: param.type.description)
         }
         return (name: name, params: params)
+      }
+    }
+  }
+
+  private static func validateEnumCases(
+    cases: [EnumCase],
+    config: UnionCodableConfig
+  ) throws(UnionCodableError) {
+    for (name, params) in cases {
+      guard let params else { continue }
+
+      let (positional, named) = params.split { (name, _) in name == nil }
+      guard positional.count == 0 || named.count == 0 else {
+        throw .ambiguousPayload
+      }
+      guard !named.map(\.name).contains(config.discriminator) else {
+        throw .discriminatorConflict(caseName: name)
       }
     }
   }
@@ -150,6 +167,19 @@ typealias EnumCase = (name: String, params: [(name: String?, type: String)]?)
 extension Array {
   func mapLines(transform: (Element) -> String) -> String {
     map(transform).joined(separator: "\n")
+  }
+
+  func split(by predicate: (Element) -> Bool) -> ([Element], [Element]) {
+    var first: [Element] = []
+    var second: [Element] = []
+    for item in self {
+      if predicate(item) {
+        first.append(item)
+      } else {
+        second.append(item)
+      }
+    }
+    return (first, second)
   }
 }
 
