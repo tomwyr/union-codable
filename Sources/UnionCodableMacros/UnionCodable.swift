@@ -76,7 +76,7 @@ extension UnionCodableMacro {
     _ config: UnionCodableConfig
   ) throws(UnionCodableError) {
     for (name, params) in cases {
-      let (positional, named) = params.split { (name, _) in name == nil }
+      let (positional, named) = params.split { name, _ in name == nil }
       guard positional.count == 0 || named.count == 0 else {
         throw .ambiguousPayload
       }
@@ -176,9 +176,8 @@ extension UnionCodableMacro {
           switch \(discriminator) {
           \(raw: cases.mapLines { """
           case "\($0.name)":
-            self = .\($0.name)
-          """
-          }.padded(4))
+            \(expandCaseDecoding($0).padded(2))
+          """ }.padded(4))
           default:
             throw DecodingError.dataCorruptedError(
               forKey: .\(discriminator), in: container, 
@@ -189,6 +188,26 @@ extension UnionCodableMacro {
       }
       """
   }
+
+  private static func expandCaseDecoding(_ enumCase: EnumCase) -> String {
+    let namedParams = enumCase.params.compactMap { name, type in
+      if let name { (name: name, type: type, last: false) } else { nil }
+    }
+
+    return if namedParams.isEmpty {
+      """
+      self = .\(enumCase.name)
+      """
+    } else {
+      """
+      self = .\(enumCase.name)(
+      \(namedParams.mapLines(separator: ",") { """
+        \($0.name): try container.decode(\($0.type).self, forKey: .\($0.name))
+      """})
+      )
+      """
+    }
+  }
 }
 
 struct UnionCodableConfig {
@@ -198,8 +217,8 @@ struct UnionCodableConfig {
 typealias EnumCase = (name: String, params: [(name: String?, type: String)])
 
 extension Array {
-  func mapLines(transform: (Element) -> String) -> String {
-    map(transform).joined(separator: "\n")
+  func mapLines(separator: String = "", transform: (Element) -> String) -> String {
+    map(transform).joined(separator: separator + "\n")
   }
 
   func split(by predicate: (Element) -> Bool) -> ([Element], [Element]) {

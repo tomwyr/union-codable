@@ -316,9 +316,14 @@ extension UnionCodableTest {
 
           switch type {
           case "loading":
-            self = .loading
+            self = .loading(
+              progress: try container.decode(Double.self, forKey: .progress)
+            )
           case "data":
-            self = .data
+            self = .data(
+              length: try container.decode(Int.self, forKey: .length),
+              payload: try container.decode(String.self, forKey: .payload)
+            )
           case "error":
             self = .error
           default:
