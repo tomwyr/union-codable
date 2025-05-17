@@ -114,13 +114,27 @@ extension UnionCodableMacro {
 
         switch self {
         \(raw: cases.mapLines { """
-        case .\($0.name):
+        \(expandCaseClause($0))
           \(expandCaseEncoding($0, config).padded(2))
         """ }.padded(4))
         }
       }
     }
     """
+  }
+
+  private static func expandCaseClause(_ enumCase: EnumCase) -> String {
+    let namedParams = enumCase.params.compactMap(\.name).joined(separator: ", ")
+
+    return if namedParams.isEmpty {
+      """
+      case .\(enumCase.name):
+      """
+    } else {
+      """
+      case let .\(enumCase.name)(\(namedParams)):
+      """
+    }
   }
 
   private static func expandCaseEncoding(

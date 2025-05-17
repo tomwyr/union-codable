@@ -296,10 +296,10 @@ extension UnionCodableTest {
           var container = encoder.container(keyedBy: CodingKeys.self)
 
           switch self {
-          case .loading:
+          case let .loading(progress):
             try container.encode("loading", forKey: .type)
             try container.encode(progress, forKey: .progress)
-          case .data:
+          case let .data(length, payload):
             try container.encode("data", forKey: .type)
             try container.encode(length, forKey: .length)
             try container.encode(payload, forKey: .payload)
