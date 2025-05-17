@@ -86,7 +86,7 @@ extension UnionCodableMacro {
     return """
       extension \(raw: target) {
         fileprivate enum CodingKeys: String, CodingKey {
-          case type = "\(raw: discriminator)"
+          case discriminator = "\(raw: discriminator)"
         }
       }
       """
@@ -103,7 +103,7 @@ extension UnionCodableMacro {
         switch self {
         \(raw: cases.mapLines { """
         case .\($0.name):
-          try container.encode("\($0.name)", forKey: .type)
+          try container.encode("\($0.name)", forKey: .discriminator)
         """
         }.padded(4))
         }
@@ -119,9 +119,9 @@ extension UnionCodableMacro {
     extension \(raw: target): Decodable {
       init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        let type = try container.decode(String.self, forKey: .type)
+        let discriminator = try container.decode(String.self, forKey: .discriminator)
 
-        switch type {
+        switch discriminator {
         \(raw: cases.mapLines { """
         case "\($0.name)":
           self = .\($0.name)
@@ -129,8 +129,8 @@ extension UnionCodableMacro {
         }.padded(4))
         default:
           throw DecodingError.dataCorruptedError(
-            forKey: .type, in: container, 
-            debugDescription: "Unknown union type: \\(type)"
+            forKey: .discriminator, in: container, 
+            debugDescription: "Unknown union discriminator: \\(discriminator)"
           )
         }
       }
