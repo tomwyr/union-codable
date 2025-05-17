@@ -14,7 +14,7 @@ public struct UnionCodableMacro: MemberMacro {
     of node: AttributeSyntax, providingMembersOf declaration: some DeclGroupSyntax,
     conformingTo protocols: [TypeSyntax], in context: some MacroExpansionContext
   ) throws(UnionCodableError) -> [DeclSyntax] {
-    guard let macroConfig = extractMacroConfig(node) else {
+    guard let config = extractMacroConfig(node) else {
       throw .invalidDeclaration
     }
     guard let enumDecl = declaration.as(EnumDeclSyntax.self) else {
@@ -22,11 +22,10 @@ public struct UnionCodableMacro: MemberMacro {
     }
 
     let target = enumDecl.name.text
-    let discriminator = macroConfig.discriminator
     let cases = try extractEnumCases(enumDecl)
 
     return [
-      expandCodingKeys(target: target, discriminator: discriminator, cases: cases),
+      expandCodingKeys(target: target, cases: cases, config: config),
       expandEncoding(target: target, cases: cases),
       expandDecoding(target: target, cases: cases),
     ]
@@ -80,13 +79,16 @@ extension UnionCodableMacro {
 }
 
 extension UnionCodableMacro {
-  private static func expandCodingKeys(target: String, discriminator: String, cases: [EnumCase])
+  private static func expandCodingKeys(
+    target: String, cases: [EnumCase],
+    config: UnionCodableConfig,
+  )
     -> DeclSyntax
   {
     return """
       extension \(raw: target) {
         fileprivate enum CodingKeys: String, CodingKey {
-          case discriminator = "\(raw: discriminator)"
+          case discriminator = "\(raw: config.discriminator)"
         }
       }
       """
