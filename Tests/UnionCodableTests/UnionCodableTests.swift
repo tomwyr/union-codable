@@ -7,7 +7,7 @@ import Testing
 struct UnionCodableTest {}
 
 extension UnionCodableTest {
-  @Test func casesWithNoParamsMultiLine() async throws {
+  @Test func casesWithNoParamsMultiLine() {
     assertMacro {
       """
       @UnionCodable
@@ -76,7 +76,7 @@ extension UnionCodableTest {
     }
   }
 
-  @Test func casesWithNoParamsSingleLine() async throws {
+  @Test func casesWithNoParamsSingleLine() {
     assertMacro {
       """
       @UnionCodable
@@ -139,7 +139,7 @@ extension UnionCodableTest {
     }
   }
 
-  @Test func casesWithEmptyMacroConstructor() async throws {
+  @Test func casesWithEmptyMacroConstructor() {
     assertMacro {
       """
       @UnionCodable()
@@ -202,7 +202,7 @@ extension UnionCodableTest {
     }
   }
 
-  @Test func casesWithCustomDiscriminator() async throws {
+  @Test func casesWithCustomDiscriminator() {
     assertMacro {
       """
       @UnionCodable(discriminator: "kind")
@@ -267,7 +267,7 @@ extension UnionCodableTest {
 }
 
 extension UnionCodableTest {
-  @Test func casesWithNamedParams() async throws {
+  @Test func casesWithNamedParams() {
     assertMacro {
       """
       @UnionCodable
@@ -335,7 +335,7 @@ extension UnionCodableTest {
 }
 
 extension UnionCodableTest {
-  @Test func casesWithDiscriminatorConflict() async throws {
+  @Test func casesWithDiscriminatorConflict() {
     assertMacro {
       """
       @UnionCodable
@@ -359,7 +359,7 @@ extension UnionCodableTest {
     }
   }
 
-  @Test func casesWithCustomDiscriminatorConflict() async throws {
+  @Test func casesWithCustomDiscriminatorConflict() {
     assertMacro {
       """
       @UnionCodable(discriminator: "resource")
