@@ -28,7 +28,7 @@ extension UnionCodableTest {
 
         extension Direction {
           fileprivate enum CodingKeys: String, CodingKey {
-            case discriminator = "type"
+            case type
           }
         }
 
@@ -38,13 +38,13 @@ extension UnionCodableTest {
 
             switch self {
             case .up:
-              try container.encode("up", forKey: .discriminator)
+              try container.encode("up", forKey: .type)
             case .down:
-              try container.encode("down", forKey: .discriminator)
+              try container.encode("down", forKey: .type)
             case .left:
-              try container.encode("left", forKey: .discriminator)
+              try container.encode("left", forKey: .type)
             case .right:
-              try container.encode("right", forKey: .discriminator)
+              try container.encode("right", forKey: .type)
             }
           }
         }
@@ -52,9 +52,9 @@ extension UnionCodableTest {
         extension Direction: Decodable {
           init(from decoder: any Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
-            let discriminator = try container.decode(String.self, forKey: .discriminator)
+            let type = try container.decode(String.self, forKey: .type)
 
-            switch discriminator {
+            switch type {
             case "up":
               self = .up
             case "down":
@@ -65,8 +65,8 @@ extension UnionCodableTest {
               self = .right
             default:
               throw DecodingError.dataCorruptedError(
-                forKey: .discriminator, in: container,
-                debugDescription: "Unknown union discriminator: \\(discriminator)"
+                forKey: .type, in: container,
+                debugDescription: "Unknown union type: \\(type)"
               )
             }
           }
@@ -91,7 +91,7 @@ extension UnionCodableTest {
 
         extension Direction {
           fileprivate enum CodingKeys: String, CodingKey {
-            case discriminator = "type"
+            case type
           }
         }
 
@@ -101,13 +101,13 @@ extension UnionCodableTest {
 
             switch self {
             case .up:
-              try container.encode("up", forKey: .discriminator)
+              try container.encode("up", forKey: .type)
             case .down:
-              try container.encode("down", forKey: .discriminator)
+              try container.encode("down", forKey: .type)
             case .left:
-              try container.encode("left", forKey: .discriminator)
+              try container.encode("left", forKey: .type)
             case .right:
-              try container.encode("right", forKey: .discriminator)
+              try container.encode("right", forKey: .type)
             }
           }
         }
@@ -115,9 +115,9 @@ extension UnionCodableTest {
         extension Direction: Decodable {
           init(from decoder: any Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
-            let discriminator = try container.decode(String.self, forKey: .discriminator)
+            let type = try container.decode(String.self, forKey: .type)
 
-            switch discriminator {
+            switch type {
             case "up":
               self = .up
             case "down":
@@ -128,8 +128,8 @@ extension UnionCodableTest {
               self = .right
             default:
               throw DecodingError.dataCorruptedError(
-                forKey: .discriminator, in: container,
-                debugDescription: "Unknown union discriminator: \\(discriminator)"
+                forKey: .type, in: container,
+                debugDescription: "Unknown union type: \\(type)"
               )
             }
           }
@@ -154,7 +154,7 @@ extension UnionCodableTest {
 
         extension Direction {
           fileprivate enum CodingKeys: String, CodingKey {
-            case discriminator = "type"
+            case type
           }
         }
 
@@ -164,13 +164,13 @@ extension UnionCodableTest {
 
             switch self {
             case .up:
-              try container.encode("up", forKey: .discriminator)
+              try container.encode("up", forKey: .type)
             case .down:
-              try container.encode("down", forKey: .discriminator)
+              try container.encode("down", forKey: .type)
             case .left:
-              try container.encode("left", forKey: .discriminator)
+              try container.encode("left", forKey: .type)
             case .right:
-              try container.encode("right", forKey: .discriminator)
+              try container.encode("right", forKey: .type)
             }
           }
         }
@@ -178,9 +178,9 @@ extension UnionCodableTest {
         extension Direction: Decodable {
           init(from decoder: any Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
-            let discriminator = try container.decode(String.self, forKey: .discriminator)
+            let type = try container.decode(String.self, forKey: .type)
 
-            switch discriminator {
+            switch type {
             case "up":
               self = .up
             case "down":
@@ -191,8 +191,8 @@ extension UnionCodableTest {
               self = .right
             default:
               throw DecodingError.dataCorruptedError(
-                forKey: .discriminator, in: container,
-                debugDescription: "Unknown union discriminator: \\(discriminator)"
+                forKey: .type, in: container,
+                debugDescription: "Unknown union type: \\(type)"
               )
             }
           }
@@ -217,7 +217,7 @@ extension UnionCodableTest {
 
         extension Direction {
           fileprivate enum CodingKeys: String, CodingKey {
-            case discriminator = "kind"
+            case kind
           }
         }
 
@@ -227,13 +227,13 @@ extension UnionCodableTest {
 
             switch self {
             case .up:
-              try container.encode("up", forKey: .discriminator)
+              try container.encode("up", forKey: .kind)
             case .down:
-              try container.encode("down", forKey: .discriminator)
+              try container.encode("down", forKey: .kind)
             case .left:
-              try container.encode("left", forKey: .discriminator)
+              try container.encode("left", forKey: .kind)
             case .right:
-              try container.encode("right", forKey: .discriminator)
+              try container.encode("right", forKey: .kind)
             }
           }
         }
@@ -241,9 +241,9 @@ extension UnionCodableTest {
         extension Direction: Decodable {
           init(from decoder: any Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
-            let discriminator = try container.decode(String.self, forKey: .discriminator)
+            let kind = try container.decode(String.self, forKey: .kind)
 
-            switch discriminator {
+            switch kind {
             case "up":
               self = .up
             case "down":
@@ -254,8 +254,8 @@ extension UnionCodableTest {
               self = .right
             default:
               throw DecodingError.dataCorruptedError(
-                forKey: .discriminator, in: container,
-                debugDescription: "Unknown union discriminator: \\(discriminator)"
+                forKey: .kind, in: container,
+                debugDescription: "Unknown union kind: \\(kind)"
               )
             }
           }

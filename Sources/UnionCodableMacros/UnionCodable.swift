@@ -24,12 +24,12 @@ public struct UnionCodableMacro: MemberMacro {
     let target = enumDecl.name.text
     let cases = extractEnumCases(enumDecl)
 
-    try validateEnumCases(cases: cases, config: config)
+    try validateEnumCases(cases, config)
 
     return [
-      expandCodingKeys(target: target, cases: cases, config: config),
-      expandEncoding(target: target, cases: cases),
-      expandDecoding(target: target, cases: cases),
+      expandCodingKeys(target, cases, config),
+      expandEncoding(target, cases, config),
+      expandDecoding(target, cases, config),
     ]
   }
 }
@@ -78,8 +78,8 @@ extension UnionCodableMacro {
   }
 
   private static func validateEnumCases(
-    cases: [EnumCase],
-    config: UnionCodableConfig
+    _ cases: [EnumCase],
+    _ config: UnionCodableConfig
   ) throws(UnionCodableError) {
     for (name, params) in cases {
       guard let params else { continue }
@@ -97,23 +97,24 @@ extension UnionCodableMacro {
 
 extension UnionCodableMacro {
   private static func expandCodingKeys(
-    target: String, cases: [EnumCase],
-    config: UnionCodableConfig,
-  )
-    -> DeclSyntax
-  {
+    _ target: String, _ cases: [EnumCase],
+    _ config: UnionCodableConfig,
+  ) -> DeclSyntax {
+    let keys = [config.discriminator] + cases.flatMap { $0.params?.compactMap(\.name) ?? [] }
+
     return """
       extension \(raw: target) {
         fileprivate enum CodingKeys: String, CodingKey {
-          case discriminator = "\(raw: config.discriminator)"
+          case \(raw: keys.joined(separator: ", "))
         }
       }
       """
   }
 
-  private static func expandEncoding(target: String, cases: [EnumCase])
-    -> DeclSyntax
-  {
+  private static func expandEncoding(
+    _ target: String, _ cases: [EnumCase],
+    _ config: UnionCodableConfig,
+  ) -> DeclSyntax {
     """
     extension \(raw: target): Encodable {
       func encode(to encoder: any Encoder) throws {
@@ -122,7 +123,7 @@ extension UnionCodableMacro {
         switch self {
         \(raw: cases.mapLines { """
         case .\($0.name):
-          try container.encode("\($0.name)", forKey: .discriminator)
+          try container.encode("\($0.name)", forKey: .\(config.discriminator))
         """
         }.padded(4))
         }
@@ -131,30 +132,33 @@ extension UnionCodableMacro {
     """
   }
 
-  private static func expandDecoding(target: String, cases: [EnumCase])
-    -> DeclSyntax
-  {
-    """
-    extension \(raw: target): Decodable {
-      init(from decoder: any Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        let discriminator = try container.decode(String.self, forKey: .discriminator)
+  private static func expandDecoding(
+    _ target: String, _ cases: [EnumCase],
+    _ config: UnionCodableConfig,
+  ) -> DeclSyntax {
+    let discriminator: DeclSyntax = "\(raw: config.discriminator)"
 
-        switch discriminator {
-        \(raw: cases.mapLines { """
-        case "\($0.name)":
-          self = .\($0.name)
-        """
-        }.padded(4))
-        default:
-          throw DecodingError.dataCorruptedError(
-            forKey: .discriminator, in: container, 
-            debugDescription: "Unknown union discriminator: \\(discriminator)"
-          )
+    return """
+      extension \(raw: target): Decodable {
+        init(from decoder: any Decoder) throws {
+          let container = try decoder.container(keyedBy: CodingKeys.self)
+          let \(discriminator) = try container.decode(String.self, forKey: .\(discriminator))
+
+          switch \(discriminator) {
+          \(raw: cases.mapLines { """
+          case "\($0.name)":
+            self = .\($0.name)
+          """
+          }.padded(4))
+          default:
+            throw DecodingError.dataCorruptedError(
+              forKey: .\(discriminator), in: container, 
+              debugDescription: "Unknown union \(discriminator): \\(\(discriminator))"
+            )
+          }
         }
       }
-    }
-    """
+      """
   }
 }
 
