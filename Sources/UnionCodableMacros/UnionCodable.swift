@@ -1,14 +1,6 @@
 import SwiftSyntax
 import SwiftSyntaxMacros
 
-/*
-Requirements:
-- No params
-- Named params only
-- Single positional param
-  - Cannot be enum
-  - Cannot conflict with discriminator
-*/
 public struct UnionCodableMacro: MemberMacro {
   public static func expansion(
     of node: AttributeSyntax, providingMembersOf declaration: some DeclGroupSyntax,
@@ -69,9 +61,10 @@ extension UnionCodableMacro {
 
       return caseDecl.elements.map { element in
         let name = element.name.text
-        let params = element.parameterClause?.parameters.map { param in
-          (name: param.firstName?.text, type: param.type.description)
-        }
+        let params =
+          element.parameterClause?.parameters.map { param in
+            (name: param.firstName?.text, type: param.type.description)
+          } ?? []
         return (name: name, params: params)
       }
     }
@@ -82,8 +75,6 @@ extension UnionCodableMacro {
     _ config: UnionCodableConfig
   ) throws(UnionCodableError) {
     for (name, params) in cases {
-      guard let params else { continue }
-
       let (positional, named) = params.split { (name, _) in name == nil }
       guard positional.count == 0 || named.count == 0 else {
         throw .ambiguousPayload
@@ -100,7 +91,7 @@ extension UnionCodableMacro {
     _ target: String, _ cases: [EnumCase],
     _ config: UnionCodableConfig,
   ) -> DeclSyntax {
-    let keys = [config.discriminator] + cases.flatMap { $0.params?.compactMap(\.name) ?? [] }
+    let keys = [config.discriminator] + cases.flatMap { $0.params.compactMap(\.name) }
 
     return """
       extension \(raw: target) {
@@ -166,7 +157,7 @@ struct UnionCodableConfig {
   var discriminator: String = "type"
 }
 
-typealias EnumCase = (name: String, params: [(name: String?, type: String)]?)
+typealias EnumCase = (name: String, params: [(name: String?, type: String)])
 
 extension Array {
   func mapLines(transform: (Element) -> String) -> String {
