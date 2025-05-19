@@ -387,4 +387,52 @@ extension UnionCodableTest {
       """
     }
   }
+
+  @Test func casesWithMultiplePositionalParams() {
+    assertMacro {
+      """
+      @UnionCodable
+      enum Resource {
+        case loading(progress: Double)
+        case data(Int, String)
+        case error
+      }
+      """
+    } diagnostics: {
+      """
+      @UnionCodable
+      ┬────────────
+      ╰─ 🛑 ambiguousPayload
+      enum Resource {
+        case loading(progress: Double)
+        case data(Int, String)
+        case error
+      }
+      """
+    }
+  }
+
+  @Test func casesWithMixedParamsTypes() {
+    assertMacro {
+      """
+      @UnionCodable
+      enum Resource {
+        case loading(progress: Double)
+        case data(Int, resource: String)
+        case error
+      }
+      """
+    } diagnostics: {
+      """
+      @UnionCodable
+      ┬────────────
+      ╰─ 🛑 ambiguousPayload
+      enum Resource {
+        case loading(progress: Double)
+        case data(Int, resource: String)
+        case error
+      }
+      """
+    }
+  }
 }
