@@ -128,7 +128,7 @@ extension UnionCodableMacro {
   }
 
   private static func expandCaseClause(_ enumCase: EnumCase) -> String {
-    let hasPositionalParam = !enumCase.params.filter { $0.name == nil }.isEmpty
+    let hasPositionalParam = enumCase.params.count { $0.name == nil } == 1
     let namedParams = enumCase.params.compactMap(\.name).joined(separator: ", ")
 
     return if hasPositionalParam {
@@ -152,16 +152,20 @@ extension UnionCodableMacro {
     let encodeDiscriminator = """
       try container.encode("\(enumCase.name)", forKey: .\(config.discriminator))
       """
-    let encodeParams = enumCase.params.compactMap(\.name).lineJoined {
-      """
-      try container.encode(\($0), forKey: .\($0))   
-      """
-    }
+    let hasPositionalParam = enumCase.params.count { $0.name == nil } == 1
+    let namedParams = enumCase.params.compactMap(\.name)
 
-    return if !encodeParams.isEmpty {
+    return if hasPositionalParam {
       """
       \(encodeDiscriminator)
-      \(encodeParams)
+      try value.encode(to: encoder)
+      """
+    } else if !namedParams.isEmpty {
+      """
+      \(encodeDiscriminator)
+      \(namedParams.lineJoined { """
+      try container.encode(\($0), forKey: .\($0))   
+      """ })
       """
     } else {
       """
