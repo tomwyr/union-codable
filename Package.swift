@@ -9,7 +9,7 @@ let package = Package(
     products: [
         .library(
             name: "UnionCodable",
-            targets: ["UnionCodableMacros"]
+            targets: ["UnionCodable"],
         )
     ],
     dependencies: [
@@ -35,5 +35,5 @@ let package = Package(
                 .product(name: "MacroTesting", package: "swift-macro-testing"),
             ],
         ),
-    ]
+    ],
 )
