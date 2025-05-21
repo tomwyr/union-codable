@@ -1,12 +1,14 @@
 import SwiftSyntax
 import SwiftSyntaxMacros
 
-public struct UnionCodableMacro: PeerMacro {
+public struct UnionCodableMacro: ExtensionMacro {
   public static func expansion(
-    of node: SwiftSyntax.AttributeSyntax,
-    providingPeersOf declaration: some SwiftSyntax.DeclSyntaxProtocol,
-    in context: some SwiftSyntaxMacros.MacroExpansionContext
-  ) throws(UnionCodableError) -> [DeclSyntax] {
+    of node: AttributeSyntax,
+    attachedTo declaration: some DeclGroupSyntax,
+    providingExtensionsOf type: some TypeSyntaxProtocol,
+    conformingTo protocols: [TypeSyntax],
+    in context: some MacroExpansionContext
+  ) throws(UnionCodableError) -> [ExtensionDeclSyntax] {
     guard let config = extractMacroConfig(node) else {
       throw .invalidDeclaration
     }
@@ -19,11 +21,11 @@ public struct UnionCodableMacro: PeerMacro {
 
     try validateEnumCases(cases, config)
 
-    return [
+    return try [
       expandCodingKeys(target, cases, config),
       expandEncoding(target, cases, config),
       expandDecoding(target, cases, config),
-    ]
+    ].asExtensionDeclarations()
   }
 }
 
@@ -220,6 +222,19 @@ extension UnionCodableMacro {
       )
       """
     }
+  }
+}
+
+extension [DeclSyntax] {
+  func asExtensionDeclarations() throws(UnionCodableError) -> [ExtensionDeclSyntax] {
+    var result = [ExtensionDeclSyntax]()
+    for decl in self {
+      guard let extDecl = decl.as(ExtensionDeclSyntax.self) else {
+        throw .invalidExpansion
+      }
+      result.append(extDecl)
+    }
+    return result
   }
 }
 
