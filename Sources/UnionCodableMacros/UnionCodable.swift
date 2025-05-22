@@ -205,11 +205,19 @@ extension UnionCodableMacro {
   }
 
   private static func expandCaseDecoding(_ enumCase: EnumCase) -> String {
+    var positionalParam: (name: String?, type: String)?
+    if enumCase.params.count == 1, let param = enumCase.params.first, param.name == nil {
+      positionalParam = param
+    }
     let namedParams = enumCase.params.compactMap { name, type in
-      if let name { (name: name, type: type, last: false) } else { nil }
+      if let name { (name: name, type: type) } else { nil }
     }
 
-    return if namedParams.isEmpty {
+    return if let positionalParam {
+      """
+      self = .\(enumCase.name)(try \(positionalParam.type)(from: decoder))
+      """
+    } else if namedParams.isEmpty {
       """
       self = .\(enumCase.name)
       """

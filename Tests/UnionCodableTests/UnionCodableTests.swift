@@ -389,11 +389,11 @@ extension UnionCodableTest {
 
           switch type {
           case "cash":
-            self = .cash
+            self = .cash(try Cash(from: decoder))
           case "check":
-            self = .check
+            self = .check(try Check(from: decoder))
           case "wire":
-            self = .wire
+            self = .wire(try Wire(from: decoder))
           default:
             throw DecodingError.dataCorruptedError(
               forKey: .type, in: container,
