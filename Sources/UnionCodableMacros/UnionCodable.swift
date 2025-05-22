@@ -98,7 +98,8 @@ extension UnionCodableMacro {
     _ target: String, _ cases: [EnumCase],
     _ config: UnionCodableConfig,
   ) -> DeclSyntax {
-    let keys = Set([config.discriminator] + cases.flatMap { $0.params.compactMap(\.name) })
+    let caseNames = cases.flatMap { $0.params.compactMap(\.name) }
+    let keys = ([config.discriminator] + caseNames).uniqued()
 
     return """
       extension \(raw: target) {
@@ -114,7 +115,7 @@ extension UnionCodableMacro {
     _ config: UnionCodableConfig,
   ) -> DeclSyntax {
     """
-    extension \(raw: target): Encodable {
+    extension \(raw: target) {
       func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
 
@@ -183,7 +184,7 @@ extension UnionCodableMacro {
     let discriminator: DeclSyntax = "\(raw: config.discriminator)"
 
     return """
-      extension \(raw: target): Decodable {
+      extension \(raw: target) {
         init(from decoder: any Decoder) throws {
           let container = try decoder.container(keyedBy: CodingKeys.self)
           let \(discriminator) = try container.decode(String.self, forKey: .\(discriminator))
@@ -268,6 +269,13 @@ extension Array {
       }
     }
     return (first, second)
+  }
+}
+
+extension Array where Element: Hashable {
+  func uniqued() -> [Element] {
+    var seen = Set<Element>()
+    return self.filter { seen.insert($0).inserted }
   }
 }
 

@@ -33,7 +33,7 @@ extension UnionCodableTest {
         }
       }
 
-      extension Direction: Encodable {
+      extension Direction {
         func encode(to encoder: any Encoder) throws {
           var container = encoder.container(keyedBy: CodingKeys.self)
 
@@ -50,7 +50,7 @@ extension UnionCodableTest {
         }
       }
 
-      extension Direction: Decodable {
+      extension Direction {
         init(from decoder: any Decoder) throws {
           let container = try decoder.container(keyedBy: CodingKeys.self)
           let type = try container.decode(String.self, forKey: .type)
@@ -96,7 +96,7 @@ extension UnionCodableTest {
         }
       }
 
-      extension Direction: Encodable {
+      extension Direction {
         func encode(to encoder: any Encoder) throws {
           var container = encoder.container(keyedBy: CodingKeys.self)
 
@@ -113,7 +113,7 @@ extension UnionCodableTest {
         }
       }
 
-      extension Direction: Decodable {
+      extension Direction {
         init(from decoder: any Decoder) throws {
           let container = try decoder.container(keyedBy: CodingKeys.self)
           let type = try container.decode(String.self, forKey: .type)
@@ -159,7 +159,7 @@ extension UnionCodableTest {
         }
       }
 
-      extension Direction: Encodable {
+      extension Direction {
         func encode(to encoder: any Encoder) throws {
           var container = encoder.container(keyedBy: CodingKeys.self)
 
@@ -176,7 +176,7 @@ extension UnionCodableTest {
         }
       }
 
-      extension Direction: Decodable {
+      extension Direction {
         init(from decoder: any Decoder) throws {
           let container = try decoder.container(keyedBy: CodingKeys.self)
           let type = try container.decode(String.self, forKey: .type)
@@ -222,7 +222,7 @@ extension UnionCodableTest {
         }
       }
 
-      extension Direction: Encodable {
+      extension Direction {
         func encode(to encoder: any Encoder) throws {
           var container = encoder.container(keyedBy: CodingKeys.self)
 
@@ -239,7 +239,7 @@ extension UnionCodableTest {
         }
       }
 
-      extension Direction: Decodable {
+      extension Direction {
         init(from decoder: any Decoder) throws {
           let container = try decoder.container(keyedBy: CodingKeys.self)
           let kind = try container.decode(String.self, forKey: .kind)
@@ -291,7 +291,7 @@ extension UnionCodableTest {
         }
       }
 
-      extension Resource: Encodable {
+      extension Resource {
         func encode(to encoder: any Encoder) throws {
           var container = encoder.container(keyedBy: CodingKeys.self)
 
@@ -309,7 +309,7 @@ extension UnionCodableTest {
         }
       }
 
-      extension Resource: Decodable {
+      extension Resource {
         init(from decoder: any Decoder) throws {
           let container = try decoder.container(keyedBy: CodingKeys.self)
           let type = try container.decode(String.self, forKey: .type)
@@ -362,7 +362,7 @@ extension UnionCodableTest {
         }
       }
 
-      extension Resource: Encodable {
+      extension Resource {
         func encode(to encoder: any Encoder) throws {
           var container = encoder.container(keyedBy: CodingKeys.self)
 
@@ -381,7 +381,7 @@ extension UnionCodableTest {
         }
       }
 
-      extension Resource: Decodable {
+      extension Resource {
         init(from decoder: any Decoder) throws {
           let container = try decoder.container(keyedBy: CodingKeys.self)
           let type = try container.decode(String.self, forKey: .type)
@@ -438,7 +438,7 @@ extension UnionCodableTest {
         }
       }
 
-      extension Payment: Encodable {
+      extension Payment {
         func encode(to encoder: any Encoder) throws {
           var container = encoder.container(keyedBy: CodingKeys.self)
 
@@ -456,7 +456,7 @@ extension UnionCodableTest {
         }
       }
 
-      extension Payment: Decodable {
+      extension Payment {
         init(from decoder: any Decoder) throws {
           let container = try decoder.container(keyedBy: CodingKeys.self)
           let type = try container.decode(String.self, forKey: .type)
