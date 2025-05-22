@@ -98,7 +98,7 @@ extension UnionCodableMacro {
     _ target: String, _ cases: [EnumCase],
     _ config: UnionCodableConfig,
   ) -> DeclSyntax {
-    let keys = [config.discriminator] + cases.flatMap { $0.params.compactMap(\.name) }
+    let keys = Set([config.discriminator] + cases.flatMap { $0.params.compactMap(\.name) })
 
     return """
       extension \(raw: target) {
