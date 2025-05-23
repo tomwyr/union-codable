@@ -12,7 +12,7 @@
 /// Example:
 /// ```swift
 /// @UnionCodable(discriminator: "kind")
-/// enum Shape {
+/// enum Shape: Codable {
 ///   case circle(radius: Double)
 ///   case rectangle(width: Double, height: Double)
 /// }
