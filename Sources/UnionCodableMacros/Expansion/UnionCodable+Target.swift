@@ -52,7 +52,7 @@ extension UnionCodableMacro {
       switch (positional.count, named.count) {
       case (0, 0): .none
       case (1, 0): .positional(type: positional.first!)
-      case (0, 1...): .named(named)
+      case (0, 1...): .named(params: named)
       default: throw .ambiguousPayload
       }
 

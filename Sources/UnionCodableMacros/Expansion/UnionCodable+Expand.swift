@@ -18,8 +18,7 @@ extension UnionCodableMacro {
   ) -> DeclSyntax {
     let caseNames = target.cases.flatMap {
       return switch $0.params {
-      case let .named(values): values.map(\.name)
-      // TODO Expand positional type params.
+      case let .named(params): params.map(\.name)
       case .none, .positional: [String]()
       }
     }
@@ -92,9 +91,9 @@ extension UnionCodableMacro {
       """
       case let .\(enumCase.name)(value):
       """
-    case let .named(namedParams):
+    case let .named(params):
       """
-      case let .\(enumCase.name)(\(namedParams.map(\.name).joined(separator: ", "))):
+      case let .\(enumCase.name)(\(params.map(\.name).joined(separator: ", "))):
       """
     }
   }
@@ -116,10 +115,10 @@ extension UnionCodableMacro {
       \(encodeDiscriminator)
       try value.encode(to: encoder)
       """
-    case let .named(namedParams):
+    case let .named(params):
       """
       \(encodeDiscriminator)
-      \(namedParams.map(\.name).lineJoined { """
+      \(params.map(\.name).lineJoined { """
       try container.encode(\($0), forKey: .\($0))   
       """ })
       """
@@ -136,10 +135,10 @@ extension UnionCodableMacro {
       """
       self = .\(enumCase.name)(try \(type)(from: decoder))
       """
-    case let .named(namedParams):
+    case let .named(params):
       """
       self = .\(enumCase.name)(
-      \(namedParams.lineJoined(suffix: ",") { """
+      \(params.lineJoined(suffix: ",") { """
         \($0.name): try container.decode(\($0.type).self, forKey: .\($0.name))
       """})
       )

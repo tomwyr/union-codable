@@ -32,7 +32,7 @@ struct EnumCase {
 enum EnumCaseParams {
   case none
   case positional(type: String)
-  case named([NamedParam])
+  case named(params: [NamedParam])
 }
 
 typealias NamedParam = (name: String, type: String)

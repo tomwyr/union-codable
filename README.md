@@ -28,6 +28,11 @@ The macro will generate `Codable` conformance encoding to/decoding from the foll
 }
 ```
 
+> [!NOTE]
+> Because `@UnionCodable` only expands to `init(from:)` and `encode(to:)` method implementations, the annotated enum must still explicitly conform to the `Codable` protocol.
+>
+> This is intentional, allowing `@UnionCodable` to be removed without code changes while maintaining uniform Codable declarations across types.
+
 The same behavior applies when enum cases are declared using positional parameters for their associated types.
 
 ```swift
@@ -56,10 +61,10 @@ The macro will generate `Codable` conformance encoding to/decoding from the foll
 }
 ```
 
-> [!NOTE]
-> Because `@UnionCodable` only expands to `init(from:)` and `encode(to:)` method implementations, the annotated enum must still explicitly conform to the `Codable` protocol.
->
-> This is intentional, allowing `@UnionCodable` to be removed without code changes while maintaining uniform Codable declarations across types.
+> [!WARNING]
+> Due to the Swift macro system's lack of type introspection, `UnionCodable` cannot detect conflicts between the discriminator and the properties of positional parameters.
+> 
+> When attaching the `@UnionCodable` annotation to enums with positional associated parameters, make sure to verify that none of their properties will use the same name as the discriminator.
 
 ## Contributing
 
