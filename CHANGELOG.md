@@ -1,3 +1,7 @@
+## 1.0.1
+
+* Documented possible conflicts between discriminator and property names.
+
 ## 1.0.0
 
 * Added `UnionCodable` macro.
