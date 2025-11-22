@@ -33,5 +33,18 @@
   extension,
   names: named(CodingKeys), named(init(from:)), named(encode(to:))
 )
-public macro UnionCodable(discriminator: String = "type") =
+public macro UnionCodable(
+  discriminator: String = "type",
+  layout: UnionCodableLayout = .flat,
+) =
   #externalMacro(module: "UnionCodableMacros", type: "UnionCodableMacro")
+
+/// Defines how an enum’s associated values are encoded:
+/// - `flat`: Associated values are merged into the top-level object alongside
+///   the discriminator.
+/// - `nested(key:)`: Associated values are placed under a nested container
+///   using the provided key.
+public enum UnionCodableLayout {
+  case flat
+  case nested(key: String = "value")
+}

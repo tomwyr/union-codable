@@ -17,6 +17,20 @@ public struct UnionCodableMacro: ExtensionMacro {
 
 struct UnionCodableConfig {
   var discriminator: String
+  var layout: UnionCodableLayout
+
+  static func defaults() -> UnionCodableConfig {
+    .init(discriminator: "type", layout: .flat)
+  }
+}
+
+enum UnionCodableLayout {
+  case flat
+  case nested(key: String)
+
+  static func nestedDefaults(key: String? = nil) -> UnionCodableLayout {
+    .nested(key: key ?? "value")
+  }
 }
 
 struct UnionCodableTarget {
