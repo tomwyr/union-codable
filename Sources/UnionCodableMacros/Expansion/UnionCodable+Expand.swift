@@ -64,23 +64,7 @@ extension UnionCodableMacro {
     _ target: UnionCodableTarget,
   ) -> DeclSyntax {
     switch config.layout {
-    case .flat:
-      """
-      extension \(raw: target.name) {
-        func encode(to encoder: any Encoder) throws {
-          var container = encoder.container(keyedBy: CodingKeys.self)
-
-          switch self {
-          \(raw: target.cases.lineJoined { """
-        \(expandCaseClause($0))
-          \(expandCaseEncoding($0, config).linePadded(2))
-        """ }.linePadded(4))
-          }
-        }
-      }
-      """
-
-    case .nested(key: let valueKey):
+    case .nested(key: let valueKey) where target.hasNamedParam:
       """
       extension \(raw: target.name) {
         func encode(to encoder: any Encoder) throws {
@@ -96,6 +80,22 @@ extension UnionCodableMacro {
         }
       }
       """
+
+    default:
+      """
+      extension \(raw: target.name) {
+        func encode(to encoder: any Encoder) throws {
+          var container = encoder.container(keyedBy: CodingKeys.self)
+
+          switch self {
+          \(raw: target.cases.lineJoined { """
+        \(expandCaseClause($0))
+          \(expandCaseEncoding($0, config).linePadded(2))
+        """ }.linePadded(4))
+          }
+        }
+      }
+      """
     }
   }
 
@@ -106,15 +106,15 @@ extension UnionCodableMacro {
     let discriminator: DeclSyntax = "\(raw: config.discriminator)"
     let containers: DeclSyntax =
       switch config.layout {
-      case .flat:
-        """
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        """
-
-      case .nested(key: let valueKey):
+      case .nested(key: let valueKey) where target.hasNamedParam:
         """
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let valueContainer = try container.nestedContainer(keyedBy: ValueCodingKeys.self, forKey: .\(raw: valueKey))
+        """
+
+      default:
+        """
+        let container = try decoder.container(keyedBy: CodingKeys.self)
         """
       }
 

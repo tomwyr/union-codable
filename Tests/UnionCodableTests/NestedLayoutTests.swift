@@ -246,7 +246,6 @@ extension UnionCodableTest {
       extension Payment {
         func encode(to encoder: any Encoder) throws {
           var container = encoder.container(keyedBy: CodingKeys.self)
-          var valueContainer = container.nestedContainer(keyedBy: ValueCodingKeys.self, forKey: .value)
 
           switch self {
           case let .cash(value):
@@ -265,7 +264,6 @@ extension UnionCodableTest {
       extension Payment {
         init(from decoder: any Decoder) throws {
           let container = try decoder.container(keyedBy: CodingKeys.self)
-          let valueContainer = try container.nestedContainer(keyedBy: ValueCodingKeys.self, forKey: .value)
           let type = try container.decode(String.self, forKey: .type)
 
           switch type {
@@ -314,7 +312,6 @@ extension UnionCodableTest {
       extension Payment {
         func encode(to encoder: any Encoder) throws {
           var container = encoder.container(keyedBy: CodingKeys.self)
-          var valueContainer = container.nestedContainer(keyedBy: ValueCodingKeys.self, forKey: .data)
 
           switch self {
           case let .cash(value):
@@ -333,7 +330,6 @@ extension UnionCodableTest {
       extension Payment {
         init(from decoder: any Decoder) throws {
           let container = try decoder.container(keyedBy: CodingKeys.self)
-          let valueContainer = try container.nestedContainer(keyedBy: ValueCodingKeys.self, forKey: .data)
           let type = try container.decode(String.self, forKey: .type)
 
           switch type {

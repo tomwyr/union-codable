@@ -36,6 +36,12 @@ enum UnionCodableLayout {
 struct UnionCodableTarget {
   var name: String
   var cases: [EnumCase]
+
+  var hasNamedParam: Bool {
+    cases.compactMap { $0.params }.contains {
+      if case .named = $0 { true } else { false }
+    }
+  }
 }
 
 struct EnumCase {
