@@ -10,7 +10,11 @@ Swift enums with associated values lack native support for discriminator-based k
 
 ## Usage
 
-Annotate your enum with `@UnionCodable`, specifying the discriminator key if necessary. Each case or associated type must provide a unique discriminator value.
+Annotate your enum with `@UnionCodable`, optionally specifying a discriminator key and layout.
+
+### Discriminator
+
+The `discriminator` key is used to identify the enum case in JSON. Each case or associated type must provide a unique discriminator value.
 
 ```swift
 @UnionCodable(discriminator: "kind")
@@ -32,6 +36,33 @@ The macro will generate `Codable` conformance encoding to/decoding from the foll
 > Because `@UnionCodable` only expands to `init(from:)` and `encode(to:)` method implementations, the annotated enum must still explicitly conform to the `Codable` protocol.
 >
 > This is intentional, allowing `@UnionCodable` to be removed without code changes while maintaining uniform Codable declarations across types.
+
+### Layout
+
+By default, `@UnionCodable` uses a **flat** layout, placing the discriminator and payload fields at the same level.
+You can switch to a **nested** layout, which groups payload under a single key, avoiding field-name collisions with the discriminator.
+
+```swift
+@UnionCodable(layout: .nested(key: "data"))
+enum Shape: Codable {
+  case circle(radius: Double)
+  case rectangle(width: Double, height: Double)
+}
+```
+
+Produces:
+```json
+{
+  "type": "circle",
+  "data": {
+    "radius": 5.0
+  }
+}
+```
+
+This is useful when payload properties may overlap with the discriminator key.
+
+### Positional Associated Types
 
 The same behavior applies when enum cases are declared using positional parameters for their associated types.
 

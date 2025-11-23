@@ -1,3 +1,7 @@
+## 1.1.0
+
+* Added the `layout` parameter, allowing data to be encoded in either flat or nested form.
+
 ## 1.0.1
 
 * Documented possible conflicts between discriminator and property names.
