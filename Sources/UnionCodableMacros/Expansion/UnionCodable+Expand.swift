@@ -23,15 +23,15 @@ extension UnionCodableMacro {
       }
     }
 
-    func expandKeys(name: String, keys: [String]) -> DeclSyntax {
+    func expandKeys(name: String, keys: [String]) -> String {
       """
-      fileprivate enum \(raw: name): String, CodingKey {
-        case \(raw: keys.joined(separator: ", "))
+      fileprivate enum \(name): String, CodingKey {
+        case \(keys.joined(separator: ", "))
       }
       """
     }
 
-    func codingKeys() -> DeclSyntax {
+    func codingKeys() -> String {
       switch config.layout {
       case .flat:
         let keys = ([config.discriminator] + caseNames).uniqued()
@@ -46,7 +46,6 @@ extension UnionCodableMacro {
         } else {
           """
           \(expandKeys(name: "CodingKeys", keys: rootKeys))
-
           \(expandKeys(name: "ValueCodingKeys", keys: valueKeys))
           """
         }
@@ -55,7 +54,7 @@ extension UnionCodableMacro {
 
     return """
       extension \(raw: target.name) {
-        \(raw: codingKeys())
+        \(raw: codingKeys().linePadded(2))
       }
       """
   }
@@ -84,18 +83,18 @@ extension UnionCodableMacro {
     case .nested(key: let valueKey):
       """
       extension \(raw: target.name) {
-          func encode(to encoder: any Encoder) throws {
-            var container = encoder.container(keyedBy: CodingKeys.self)
-            var valueContainer = container.nestedContainer(keyedBy: ValueCodingKeys.self, forKey: .\(raw: valueKey))
+        func encode(to encoder: any Encoder) throws {
+          var container = encoder.container(keyedBy: CodingKeys.self)
+          var valueContainer = container.nestedContainer(keyedBy: ValueCodingKeys.self, forKey: .\(raw: valueKey))
 
-            switch self {
-            \(raw: target.cases.lineJoined { """
-        \(expandCaseClause($0))
-          \(expandCaseEncoding($0, config).linePadded(2))
-        """ }.linePadded(4))
-            }
+          switch self {
+          \(raw: target.cases.lineJoined { """
+      \(expandCaseClause($0))
+        \(expandCaseEncoding($0, config).linePadded(2))
+      """ }.linePadded(4))
           }
         }
+      }
       """
     }
   }
@@ -227,7 +226,7 @@ extension UnionCodableMacro {
 
       case .nested(key: let valueKey):
         """
-        self = .\(enumCase.name)(value: valueContainer.decode(\(type).self, forKey: .\(valueKey)))
+        self = .\(enumCase.name)(try container.decode(\(type).self, forKey: .\(valueKey)))
         """
       }
 
