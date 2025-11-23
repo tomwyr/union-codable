@@ -56,9 +56,9 @@ extension UnionCodableMacro {
       default: throw .ambiguousPayload
       }
 
-    if case let .named(params) = caseParams {
+    if case .named(let params) = caseParams {
       guard !params.map(\.name).contains(config.discriminator) else {
-        throw .discriminatorConflict(caseName: caseName)
+        throw .discriminatorCaseParamConflict(caseName: caseName)
       }
     }
 

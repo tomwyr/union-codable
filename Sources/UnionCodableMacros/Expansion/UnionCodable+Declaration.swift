@@ -19,6 +19,12 @@ extension UnionCodableMacro {
       config.layout = layout
     }
 
+    if case .nested(key: let valueKey) = config.layout {
+      if valueKey == config.discriminator {
+        throw .discriminatorNestedValueConflict
+      }
+    }
+
     return config
   }
 

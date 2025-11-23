@@ -4,7 +4,7 @@ import Testing
 @testable import UnionCodableMacros
 
 extension UnionCodableTest {
-  @Test func casesWithDiscriminatorConflict() {
+  @Test func casesWithDiscriminatorAndParamsConflict() {
     assertMacro {
       """
       @UnionCodable
@@ -18,7 +18,7 @@ extension UnionCodableTest {
       """
       @UnionCodable
       ┬────────────
-      ╰─ 🛑 discriminatorConflict(caseName: "data")
+      ╰─ 🛑 discriminatorCaseParamConflict(caseName: "data")
       enum Resource {
         case loading(progress: Double)
         case data(length: Int, type: String)
@@ -28,7 +28,7 @@ extension UnionCodableTest {
     }
   }
 
-  @Test func casesWithCustomDiscriminatorConflict() {
+  @Test func casesWithCustomDiscriminatorAndParamsConflict() {
     assertMacro {
       """
       @UnionCodable(discriminator: "resource")
@@ -42,7 +42,55 @@ extension UnionCodableTest {
       """
       @UnionCodable(discriminator: "resource")
       ┬───────────────────────────────────────
-      ╰─ 🛑 discriminatorConflict(caseName: "data")
+      ╰─ 🛑 discriminatorCaseParamConflict(caseName: "data")
+      enum Resource {
+        case loading(progress: Double)
+        case data(length: Int, resource: String)
+        case error
+      }
+      """
+    }
+  }
+
+  @Test func casesWithDiscriminatorAndValueKeyConflict() {
+    assertMacro {
+      """
+      @UnionCodable(discriminator: "value", layout: .nested())
+      enum Resource {
+        case loading(progress: Double)
+        case data(length: Int, type: String)
+        case error
+      }
+      """
+    } diagnostics: {
+      """
+      @UnionCodable(discriminator: "value", layout: .nested())
+      ┬───────────────────────────────────────────────────────
+      ╰─ 🛑 discriminatorNestedValueConflict
+      enum Resource {
+        case loading(progress: Double)
+        case data(length: Int, type: String)
+        case error
+      }
+      """
+    }
+  }
+
+  @Test func casesWithDiscriminatorAndCustomValueKeyConflict() {
+    assertMacro {
+      """
+      @UnionCodable(layout: .nested(key: "type"))
+      enum Resource {
+        case loading(progress: Double)
+        case data(length: Int, resource: String)
+        case error
+      }
+      """
+    } diagnostics: {
+      """
+      @UnionCodable(layout: .nested(key: "type"))
+      ┬──────────────────────────────────────────
+      ╰─ 🛑 discriminatorNestedValueConflict
       enum Resource {
         case loading(progress: Double)
         case data(length: Int, resource: String)
