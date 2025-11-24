@@ -31,6 +31,7 @@ let package = Package(
         .testTarget(
             name: "UnionCodableTests",
             dependencies: [
+                "UnionCodable",
                 "UnionCodableMacros",
                 .product(name: "MacroTesting", package: "swift-macro-testing"),
             ],
