@@ -38,7 +38,11 @@ extension UnionCodableMacro {
         return expandKeys(name: "CodingKeys", keys: keys)
 
       case .nested(key: let valueKey):
-        let rootKeys = [config.discriminator, valueKey]
+        var rootKeys = [config.discriminator]
+        if target.hasAnyParam {
+          rootKeys.append(valueKey)
+        }
+        rootKeys = rootKeys.uniqued()
         let valueKeys = caseNames
 
         return if valueKeys.isEmpty {

@@ -7,7 +7,7 @@ extension UnionCodableTest {
   @Test func casesWithNoParamsAndNestedLayout() {
     assertMacro {
       """
-      @UnionCodable(layout: nested())
+      @UnionCodable(layout: .nested())
       enum Direction {
         case up, down, left, right
       }
