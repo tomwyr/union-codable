@@ -54,12 +54,12 @@ extension UnionCodableTest {
           switch type {
           case "loading":
             self = .loading(
-              progress: try container.decode(Double.self, forKey: .progress)
+              progress: try container.decode(Double.self, forKey: .progress),
             )
           case "data":
             self = .data(
               length: try container.decode(Int.self, forKey: .length),
-              payload: try container.decode(String.self, forKey: .payload)
+              payload: try container.decode(String.self, forKey: .payload),
             )
           case "error":
             self = .error
@@ -126,16 +126,16 @@ extension UnionCodableTest {
           switch type {
           case "loading":
             self = .loading(
-              progress: try container.decode(Double.self, forKey: .progress)
+              progress: try container.decode(Double.self, forKey: .progress),
             )
           case "data":
             self = .data(
               length: try container.decode(Int.self, forKey: .length),
-              payload: try container.decode(String.self, forKey: .payload)
+              payload: try container.decode(String.self, forKey: .payload),
             )
           case "error":
             self = .error(
-              payload: try container.decode(String.self, forKey: .payload)
+              payload: try container.decode(String.self, forKey: .payload),
             )
           default:
             throw DecodingError.dataCorruptedError(

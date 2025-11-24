@@ -58,7 +58,7 @@ extension UnionCodableMacro {
 
     return """
       extension \(raw: target.name) {
-        \(raw: codingKeys().linePadded(2))
+        \(raw: codingKeys().newlinePadded(2))
       }
       """
   }
@@ -67,40 +67,34 @@ extension UnionCodableMacro {
     _ config: UnionCodableConfig,
     _ target: UnionCodableTarget,
   ) -> DeclSyntax {
-    switch config.layout {
-    case .nested(key: let valueKey) where target.hasNamedParam:
-      """
+    let containers: DeclSyntax =
+      switch config.layout {
+      case .nested(key: let valueKey) where target.hasNamedParam:
+        """
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        var valueContainer = container.nestedContainer(keyedBy: ValueCodingKeys.self, forKey: .\(raw: valueKey))
+        """
+
+      default:
+        """
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        """
+      }
+
+    return """
       extension \(raw: target.name) {
         func encode(to encoder: any Encoder) throws {
-          var container = encoder.container(keyedBy: CodingKeys.self)
-          var valueContainer = container.nestedContainer(keyedBy: ValueCodingKeys.self, forKey: .\(raw: valueKey))
+          \(containers)
 
           switch self {
-          \(raw: target.cases.lineJoined { """
-      \(expandCaseClause($0))
-        \(expandCaseEncoding($0, config).linePadded(2))
-      """ }.linePadded(4))
+          \(raw: target.cases.newlineJoined { """
+          \(expandCaseClause($0))
+            \(expandCaseEncoding($0, config).newlinePadded(2))
+          """ }.newlinePadded(4))
           }
         }
       }
       """
-
-    default:
-      """
-      extension \(raw: target.name) {
-        func encode(to encoder: any Encoder) throws {
-          var container = encoder.container(keyedBy: CodingKeys.self)
-
-          switch self {
-          \(raw: target.cases.lineJoined { """
-        \(expandCaseClause($0))
-          \(expandCaseEncoding($0, config).linePadded(2))
-        """ }.linePadded(4))
-          }
-        }
-      }
-      """
-    }
   }
 
   private static func expandDecoding(
@@ -129,10 +123,10 @@ extension UnionCodableMacro {
           let \(discriminator) = try container.decode(String.self, forKey: .\(discriminator))
 
           switch \(discriminator) {
-          \(raw: target.cases.lineJoined { """
+          \(raw: target.cases.newlineJoined { """
           case "\($0.name)":
-            \(expandCaseDecoding($0, config).linePadded(2))
-          """ }.linePadded(4))
+            \(expandCaseDecoding($0, config).newlinePadded(2))
+          """ }.newlinePadded(4))
           default:
             throw DecodingError.dataCorruptedError(
               forKey: .\(discriminator), in: container, 
@@ -170,14 +164,14 @@ extension UnionCodableMacro {
       try container.encode("\(enumCase.name)", forKey: .\(config.discriminator))
       """
 
-    return switch enumCase.params {
+    switch enumCase.params {
     case .none:
-      """
-      \(encodeDiscriminator)
-      """
+      return """
+        \(encodeDiscriminator)
+        """
 
     case .positional:
-      switch config.layout {
+      return switch config.layout {
       case .flat:
         """
         \(encodeDiscriminator)
@@ -194,20 +188,26 @@ extension UnionCodableMacro {
     case .named(let params):
       switch config.layout {
       case .flat:
-        """
-        \(encodeDiscriminator)
-        \(params.map(\.name).lineJoined { """
-        try container.encode(\($0), forKey: .\($0))   
-        """ })
-        """
+        return """
+          \(encodeDiscriminator)
+          \(params.map(\.name).newlineJoined { """
+          try container.encode(\($0), forKey: .\($0))   
+          """ })
+          """
 
       case .nested:
-        """
-        \(encodeDiscriminator)
-        \(params.map(\.name).lineJoined { """
-        try valueContainer.encode(\($0), forKey: .\($0))   
-        """ })
-        """
+        let container =
+          switch config.layout {
+          case .flat: "container"
+          case .nested: "valueContainer"
+          }
+
+        return """
+          \(encodeDiscriminator)
+          \(params.map(\.name).newlineJoined { """
+          try \(container).encode(\($0), forKey: .\($0))   
+          """ })
+          """
       }
     }
   }
@@ -243,8 +243,8 @@ extension UnionCodableMacro {
 
       return """
         self = .\(enumCase.name)(
-        \(params.lineJoined(suffix: ",") { """
-          \($0.name): try \(container).decode(\($0.type).self, forKey: .\($0.name))
+        \(params.newlineJoined { """
+          \($0.name): try \(container).decode(\($0.type).self, forKey: .\($0.name)),
         """})
         )
         """
@@ -266,15 +266,15 @@ extension [DeclSyntax] {
 }
 
 extension String {
-  func linePadded(_ count: Int) -> String {
+  func newlinePadded(_ count: Int) -> String {
     let padding = String(repeating: " ", count: count)
     return split(separator: "\n").joined(separator: "\n" + padding)
   }
 }
 
 extension Array {
-  func lineJoined(suffix: String = "", transform: (Element) -> String) -> String {
-    map(transform).joined(separator: suffix + "\n")
+  func newlineJoined(transform: (Element) -> String) -> String {
+    map(transform).joined(separator: "\n")
   }
 }
 

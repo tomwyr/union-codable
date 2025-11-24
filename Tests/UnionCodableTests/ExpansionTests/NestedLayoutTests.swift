@@ -122,12 +122,12 @@ extension UnionCodableTest {
           switch type {
           case "loading":
             self = .loading(
-              progress: try valueContainer.decode(Double.self, forKey: .progress)
+              progress: try valueContainer.decode(Double.self, forKey: .progress),
             )
           case "data":
             self = .data(
               length: try valueContainer.decode(Int.self, forKey: .length),
-              payload: try valueContainer.decode(String.self, forKey: .payload)
+              payload: try valueContainer.decode(String.self, forKey: .payload),
             )
           case "error":
             self = .error
@@ -198,12 +198,12 @@ extension UnionCodableTest {
           switch type {
           case "loading":
             self = .loading(
-              progress: try valueContainer.decode(Double.self, forKey: .progress)
+              progress: try valueContainer.decode(Double.self, forKey: .progress),
             )
           case "data":
             self = .data(
               length: try valueContainer.decode(Int.self, forKey: .length),
-              payload: try valueContainer.decode(String.self, forKey: .payload)
+              payload: try valueContainer.decode(String.self, forKey: .payload),
             )
           case "error":
             self = .error
