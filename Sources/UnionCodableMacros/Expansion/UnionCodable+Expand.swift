@@ -16,63 +16,65 @@ extension UnionCodableMacro {
     _ config: UnionCodableConfig,
     _ target: UnionCodableTarget,
   ) -> DeclSyntax {
-    let caseNames = target.cases.flatMap {
-      return switch $0.params {
+    let caseNames = target.cases.flatMap { enumCase in
+      switch enumCase.params {
       case .named(let params): params.map(\.name)
       case .none, .positional: [String]()
       }
     }
 
-    func expandKeys(name: String, keys: [String]) -> String {
-      """
-      fileprivate enum \(name): String, CodingKey {
-        case \(keys.joined(separator: ", "))
-      }
-      """
-    }
-
-    func codingKeys() -> String {
+    let keys = {
       switch config.layout {
       case .flat:
-        let keys = ([config.discriminator] + caseNames).uniqued()
-        return expandKeys(name: "CodingKeys", keys: keys)
-
+        return ([config.discriminator] + caseNames).uniqued()
       case .nested(key: let valueKey):
-        var rootKeys = [config.discriminator]
+        var keys = [config.discriminator]
         if target.hasAnyParam {
-          rootKeys.append(valueKey)
+          keys.append(valueKey)
         }
-        rootKeys = rootKeys.uniqued()
-        let valueKeys = caseNames
-
-        return if valueKeys.isEmpty {
-          expandKeys(name: "CodingKeys", keys: rootKeys)
-        } else {
-          """
-          \(expandKeys(name: "CodingKeys", keys: rootKeys))
-          \(expandKeys(name: "ValueCodingKeys", keys: valueKeys))
-          """
-        }
+        return keys
       }
-    }
+    }()
 
-    return """
+    let valueKeys =
+      switch config.layout {
+      case .flat: [String]()
+      case .nested: caseNames
+      }
+
+    return if valueKeys.isEmpty {
+      """
       extension \(raw: target.name) {
-        \(raw: codingKeys().newlinePadded(2))
+        fileprivate enum CodingKeys: String, CodingKey {
+          case \(raw: keys.joined(separator: ", "))
+        }
       }
       """
+    } else {
+      """
+      extension \(raw: target.name) {
+        fileprivate enum CodingKeys: String, CodingKey {
+          case \(raw: keys.joined(separator: ", "))
+        }
+
+        fileprivate enum ValueCodingKeys: String, CodingKey {
+          case \(raw: valueKeys.joined(separator: ", "))
+        }
+      }
+      """
+    }
   }
 
   private static func expandEncoding(
     _ config: UnionCodableConfig,
     _ target: UnionCodableTarget,
   ) -> DeclSyntax {
-    let containers: DeclSyntax =
+    let containers =
       switch config.layout {
       case .nested(key: let valueKey) where target.hasNamedParam:
         """
         var container = encoder.container(keyedBy: CodingKeys.self)
-        var valueContainer = container.nestedContainer(keyedBy: ValueCodingKeys.self, forKey: .\(raw: valueKey))
+        var valueContainer = container.nestedContainer(keyedBy: ValueCodingKeys.self, forKey: .\(valueKey))
         """
 
       default:
@@ -84,17 +86,66 @@ extension UnionCodableMacro {
     return """
       extension \(raw: target.name) {
         func encode(to encoder: any Encoder) throws {
-          \(containers)
+          \(raw: containers)
 
           switch self {
-          \(raw: target.cases.newlineJoined { """
-          \(expandCaseClause($0))
-            \(expandCaseEncoding($0, config).newlinePadded(2))
-          """ }.newlinePadded(4))
+          \(raw: target.cases.newlineJoined { expandCaseEncoding($0, config) }.newlinePadded(4))
           }
         }
       }
       """
+  }
+
+  private static func expandCaseEncoding(
+    _ enumCase: EnumCase,
+    _ config: UnionCodableConfig,
+  ) -> String {
+    let encodeDiscriminator = """
+      try container.encode("\(enumCase.name)", forKey: .\(config.discriminator))
+      """
+
+    switch enumCase.params {
+    case .none:
+      return """
+        case .\(enumCase.name):
+          \(encodeDiscriminator)
+        """
+
+    case .positional:
+      let encodeValue =
+        switch config.layout {
+        case .flat:
+          """
+          try value.encode(to: encoder)
+          """
+
+        case .nested(key: let valueKey):
+          """
+          try container.encode(value, forKey: .\(valueKey))
+          """
+        }
+
+      return """
+        case let .\(enumCase.name)(value):
+          \(encodeDiscriminator)
+          \(encodeValue)
+        """
+
+    case .named(let params):
+      let container =
+        switch config.layout {
+        case .flat: "container"
+        case .nested: "valueContainer"
+        }
+
+      return """
+        case let .\(enumCase.name)(\(params.map(\.name).joined(separator: ", "))):
+          \(encodeDiscriminator)
+          \(params.newlineJoined { param in """
+          try \(container).encode(\(param.name), forKey: .\(param.name))   
+          """ }.newlinePadded(2))
+        """
+    }
   }
 
   private static func expandDecoding(
@@ -123,10 +174,7 @@ extension UnionCodableMacro {
           let \(discriminator) = try container.decode(String.self, forKey: .\(discriminator))
 
           switch \(discriminator) {
-          \(raw: target.cases.newlineJoined { """
-          case "\($0.name)":
-            \(expandCaseDecoding($0, config).newlinePadded(2))
-          """ }.newlinePadded(4))
+          \(raw: target.cases.newlineJoined { expandCaseDecoding($0, config) }.newlinePadded(4))
           default:
             throw DecodingError.dataCorruptedError(
               forKey: .\(discriminator), in: container, 
@@ -138,99 +186,29 @@ extension UnionCodableMacro {
       """
   }
 
-  private static func expandCaseClause(_ enumCase: EnumCase) -> String {
-    switch enumCase.params {
-    case .none:
-      """
-      case .\(enumCase.name):
-      """
-
-    case .positional:
-      """
-      case let .\(enumCase.name)(value):
-      """
-
-    case .named(let params):
-      """
-      case let .\(enumCase.name)(\(params.map(\.name).joined(separator: ", "))):
-      """
-    }
-  }
-
-  private static func expandCaseEncoding(
-    _ enumCase: EnumCase, _ config: UnionCodableConfig,
-  ) -> String {
-    let encodeDiscriminator = """
-      try container.encode("\(enumCase.name)", forKey: .\(config.discriminator))
-      """
-
-    switch enumCase.params {
-    case .none:
-      return """
-        \(encodeDiscriminator)
-        """
-
-    case .positional:
-      return switch config.layout {
-      case .flat:
-        """
-        \(encodeDiscriminator)
-        try value.encode(to: encoder)
-        """
-
-      case .nested(key: let valueKey):
-        """
-        \(encodeDiscriminator)
-        try container.encode(value, forKey: .\(valueKey))
-        """
-      }
-
-    case .named(let params):
-      switch config.layout {
-      case .flat:
-        return """
-          \(encodeDiscriminator)
-          \(params.map(\.name).newlineJoined { """
-          try container.encode(\($0), forKey: .\($0))   
-          """ })
-          """
-
-      case .nested:
-        let container =
-          switch config.layout {
-          case .flat: "container"
-          case .nested: "valueContainer"
-          }
-
-        return """
-          \(encodeDiscriminator)
-          \(params.map(\.name).newlineJoined { """
-          try \(container).encode(\($0), forKey: .\($0))   
-          """ })
-          """
-      }
-    }
-  }
-
   private static func expandCaseDecoding(
-    _ enumCase: EnumCase, _ config: UnionCodableConfig,
+    _ enumCase: EnumCase,
+    _ config: UnionCodableConfig,
   ) -> String {
     switch enumCase.params {
     case .none:
       return """
-        self = .\(enumCase.name)
+        case "\(enumCase.name)":
+          self = .\(enumCase.name)
         """
 
     case .positional(let type):
       return switch config.layout {
       case .flat:
         """
-        self = .\(enumCase.name)(try \(type)(from: decoder))
+        case "\(enumCase.name)":
+          self = .\(enumCase.name)(try \(type)(from: decoder))
         """
 
       case .nested(key: let valueKey):
         """
-        self = .\(enumCase.name)(try container.decode(\(type).self, forKey: .\(valueKey)))
+        case "\(enumCase.name)":
+          self = .\(enumCase.name)(try container.decode(\(type).self, forKey: .\(valueKey)))
         """
       }
 
@@ -242,11 +220,12 @@ extension UnionCodableMacro {
         }
 
       return """
-        self = .\(enumCase.name)(
-        \(params.newlineJoined { """
-          \($0.name): try \(container).decode(\($0.type).self, forKey: .\($0.name)),
-        """})
-        )
+        case "\(enumCase.name)":
+          self = .\(enumCase.name)(
+            \(params.newlineJoined { param in """
+            \(param.name): try \(container).decode(\(param.type).self, forKey: .\(param.name)),
+            """}.newlinePadded(4) )
+          )
         """
     }
   }

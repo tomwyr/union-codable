@@ -89,6 +89,7 @@ extension UnionCodableTest {
         fileprivate enum CodingKeys: String, CodingKey {
           case type, value
         }
+
         fileprivate enum ValueCodingKeys: String, CodingKey {
           case progress, length, payload
         }
@@ -165,6 +166,7 @@ extension UnionCodableTest {
         fileprivate enum CodingKeys: String, CodingKey {
           case type, data
         }
+
         fileprivate enum ValueCodingKeys: String, CodingKey {
           case progress, length, payload
         }
