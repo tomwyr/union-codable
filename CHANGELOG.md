@@ -1,3 +1,7 @@
+## 1.1.1
+
+* Added propagation of `public` modifiers to expanded methods
+
 ## 1.1.0
 
 * Added the `layout` parameter, allowing data to be encoded in either flat or nested form.
