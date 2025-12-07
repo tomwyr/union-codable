@@ -69,6 +69,7 @@ extension UnionCodableMacro {
     _ config: UnionCodableConfig,
     _ target: UnionCodableTarget,
   ) -> DeclSyntax {
+    let visibility: DeclSyntax = target.external ? "public " : ""
     let containers =
       switch config.layout {
       case .nested(key: let valueKey) where target.hasNamedParam:
@@ -85,7 +86,7 @@ extension UnionCodableMacro {
 
     return """
       extension \(raw: target.name) {
-        func encode(to encoder: any Encoder) throws {
+        \(visibility)func encode(to encoder: any Encoder) throws {
           \(raw: containers)
 
           switch self {
@@ -153,6 +154,7 @@ extension UnionCodableMacro {
     _ target: UnionCodableTarget,
   ) -> DeclSyntax {
     let discriminator: DeclSyntax = "\(raw: config.discriminator)"
+    let visibility: DeclSyntax = target.external ? "public " : ""
     let containers: DeclSyntax =
       switch config.layout {
       case .nested(key: let valueKey) where target.hasNamedParam:
@@ -169,7 +171,7 @@ extension UnionCodableMacro {
 
     return """
       extension \(raw: target.name) {
-        init(from decoder: any Decoder) throws {
+        \(visibility)init(from decoder: any Decoder) throws {
           \(containers)
           let \(discriminator) = try container.decode(String.self, forKey: .\(discriminator))
 

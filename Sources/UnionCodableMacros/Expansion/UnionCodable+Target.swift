@@ -10,6 +10,10 @@ extension UnionCodableMacro {
     }
     let name = enumDecl.name.text
 
+    let external = enumDecl.modifiers.contains { modifier in
+      modifier.name.tokenKind == .keyword(.public)
+    }
+
     var enumCases = [EnumCase]()
     for member in enumDecl.memberBlock.members {
       guard let caseDecl = member.decl.as(EnumCaseDeclSyntax.self) else {
@@ -30,7 +34,7 @@ extension UnionCodableMacro {
       }
     }
 
-    return UnionCodableTarget(name: name, cases: enumCases)
+    return UnionCodableTarget(name: name, external: external, cases: enumCases)
   }
 
   private static func resolveCaseParams(

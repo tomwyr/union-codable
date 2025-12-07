@@ -35,6 +35,7 @@ enum UnionCodableLayout {
 
 struct UnionCodableTarget {
   var name: String
+  var external: Bool
   var cases: [EnumCase]
 
   var hasAnyParam: Bool {

@@ -12,6 +12,19 @@ extension UnionCodableTest {
       """
     }
   }
+
+  @Test func encodingExternalType() throws {
+    try assertEncode {
+      ExternalDirection.right
+    } encodes: {
+      """
+      {
+        "type" : "right"
+      }
+      """
+    }
+  }
+
   @Test func encodingNoParamsWithCustomDiscriminator() throws {
     try assertEncode {
       DirectionKindDiscriminator.right
@@ -93,19 +106,19 @@ extension UnionCodableTest {
       """
     }
   }
-}
 
-@Test func encodingPositionalParamsWithCustomValueKey() throws {
-  try assertEncode {
-    PaymentBodyValueKey.check(Check(value: 100))
-  } encodes: {
-    """
-    {
-      "body" : {
-        "value" : 100
-      },
-      "type" : "check"
+  @Test func encodingPositionalParamsWithCustomValueKey() throws {
+    try assertEncode {
+      PaymentBodyValueKey.check(Check(value: 100))
+    } encodes: {
+      """
+      {
+        "body" : {
+          "value" : 100
+        },
+        "type" : "check"
+      }
+      """
     }
-    """
   }
 }

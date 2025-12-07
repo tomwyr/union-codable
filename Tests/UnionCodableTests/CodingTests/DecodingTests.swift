@@ -13,6 +13,18 @@ extension UnionCodableTest {
     }
   }
 
+  @Test func decodingExternalType() throws {
+    try assertDecode {
+      """
+      {
+        "type" : "right"
+      }
+      """
+    } decodes: {
+      ExternalDirection.right
+    }
+  }
+
   @Test func decodingNoParamsWithCustomDiscriminator() throws {
     try assertDecode {
       """
@@ -22,7 +34,6 @@ extension UnionCodableTest {
       """
     } decodes: {
       DirectionKindDiscriminator.right
-
     }
   }
 
@@ -37,7 +48,6 @@ extension UnionCodableTest {
       """
     } decodes: {
       Resource.data(length: 5, payload: "example")
-
     }
   }
 
@@ -96,19 +106,19 @@ extension UnionCodableTest {
       PaymentKindDiscriminator.check(Check(value: 100))
     }
   }
-}
 
-@Test func decodingPositionalParamsWithCustomValueKey() throws {
-  try assertDecode {
-    """
-    {
-      "body" : {
-        "value" : 100
-      },
-      "type" : "check"
+  @Test func decodingPositionalParamsWithCustomValueKey() throws {
+    try assertDecode {
+      """
+      {
+        "body" : {
+          "value" : 100
+        },
+        "type" : "check"
+      }
+      """
+    } decodes: {
+      PaymentBodyValueKey.check(Check(value: 100))
     }
-    """
-  } decodes: {
-    PaymentBodyValueKey.check(Check(value: 100))
   }
 }
