@@ -1,6 +1,10 @@
+## 1.1.2
+
+* Downgraded `swift-syntax` version to 600.
+
 ## 1.1.1
 
-* Added propagation of `public` modifiers to expanded methods
+* Added propagation of `public` modifiers to expanded methods.
 
 ## 1.1.0
 
